@@ -19,4 +19,5 @@ app.use(ElementPlus, {
 
 // 引入模板的全局样式
 import '@/styles/index.scss'
+
 app.mount('#app')
