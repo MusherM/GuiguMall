@@ -6,18 +6,23 @@ import App from '@/App.vue'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 // svg 图标需要的依赖
 import 'virtual:svg-icons-register'
-
-const app = createApp(App)
 // 引入自定义插件对象，引入整个项目的全局组件
 import globalComponent from '@/components'
+// 引入模板的全局样式
+import '@/styles/index.scss'
+// 引入路由
+import router from './router'
+// 引入仓库
+import pinia from './store'
+
+const app = createApp(App)
 // 安装自定义插件
 app.use(globalComponent)
-
 app.use(ElementPlus, {
   locale: zhCn,
 })
-
-// 引入模板的全局样式
-import '@/styles/index.scss'
-
+// 注册路由
+app.use(router)
+// 安装仓库
+app.use(pinia)
 app.mount('#app')
