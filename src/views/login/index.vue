@@ -2,12 +2,13 @@
 import { User, Lock } from '@element-plus/icons-vue'
 import { reactive, ref } from 'vue'
 import useUserStore from '@/store/modules/user.ts'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElNotification } from 'element-plus'
 import { getTime } from '@/utils/time'
 let userStore = useUserStore()
 // 获取路由器
 let $router = useRouter()
+const $route = useRoute()
 // 定义变量，控制按钮加载效果
 let loading = ref(false)
 // 收集账号密码的数据
@@ -29,7 +30,9 @@ const login = async () => {
   // 请求失败，则弹出登录失败的信息
   try {
     await userStore.userLogin(loginForm)
-    $router.push('/')
+    // 先判断路径是否有query参数，有则跳转
+    const redirect: any = $route.query.redirect
+    $router.push({ path: redirect || '/' })
     // 登录成功的提示信息
     ElNotification({
       type: 'success',
