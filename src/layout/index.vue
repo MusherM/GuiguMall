@@ -92,7 +92,6 @@ let LayoutSettingStore = useLayoutSettingStore()
     position: absolute;
     width: calc(100% - $base-menu-width);
     height: calc(100vh - $base_tabbar-height);
-    background: yellowgreen;
     left: $base-menu-width;
     top: $base_tabbar-height;
     padding: 20px;
