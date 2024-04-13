@@ -56,3 +56,41 @@ export interface SpuImage {
 export interface SpuHasImage extends ResponseData {
   data: SpuImage[]
 }
+
+// 商品销售属性的ts类型
+export interface SaleAttrValue {
+  id?: number
+  createTime: null
+  updateTime: null
+  spuId: number
+  baseSaleAttrId: number
+  saleAttrValueName: string
+  saleAttrName: string
+  ischecked: null
+}
+
+// 销售属性对象类型
+export interface SaleAttr {
+  id?: number
+  createTime: null
+  updateTime: null
+  spuId: number
+  baseSaleAttrId: number
+  saleAttrName: string
+  spuSaleAttrValueList: SaleAttrValue[]
+}
+
+// SPU 已有的销售属性接口返回的类型
+export interface SaleAttrResponseData extends ResponseData {
+  data: SaleAttr[]
+}
+
+// 已有的全部SPU的返回数据的类型
+export interface HasSaleAttr {
+  id: number
+  name: string
+}
+
+export interface HasSaleAttrResponseData extends ResponseData {
+  data: HasSaleAttr[]
+}
