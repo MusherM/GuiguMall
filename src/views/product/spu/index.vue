@@ -6,6 +6,7 @@ import useCategory from '@/store/modules/category'
 import { ref, watch } from 'vue'
 import spuForm from './spuForm.vue'
 import skuForm from './skuForm.vue'
+import { SpuData } from '../../../api/product/spu/type'
 // 场景编号
 // 0： 显示已有SPU
 // 1： 添加/修改已有的SPU
@@ -19,6 +20,8 @@ let total = ref<number>(0)
 const categoryStore = useCategory()
 // 存储已有的spu数据
 let records = ref<Records>([])
+// 获取子组件 spuForm
+let spu = ref<any>()
 // 监听三级分类id的变化
 watch(
   () => categoryStore.c3Id,
@@ -54,6 +57,13 @@ const addSpu = () => {
 // 子组件spu绑定的自定义事件
 const changeScene = (num: number) => {
   scene.value = num
+}
+
+const updateSpu = (row: SpuData) => {
+  // 切换场景为添加与修改已有的 Spu 结构
+  scene.value = 1
+  // 调用子组件的方法获取完整已有的 SPU 数据
+  spu.value.initHasSpuData(row)
 }
 </script>
 
@@ -96,7 +106,7 @@ const changeScene = (num: number) => {
             <el-button
               type="primary"
               size="small"
-              @click="addSpu"
+              @click="updateSpu(row)"
               icon="Edit"
               title="修改 SPU"
             ></el-button>
@@ -130,7 +140,7 @@ const changeScene = (num: number) => {
       />
     </div>
     <!-- 添加/修改 SPU 子组件 -->
-    <spuForm v-show="scene == 1" @changeScene="changeScene"></spuForm>
+    <spuForm ref="spu" v-show="scene == 1" @changeScene="changeScene"></spuForm>
     <!-- 添加 SKU 子组件 -->
     <skuForm v-show="scene == 2"></skuForm>
   </el-card>

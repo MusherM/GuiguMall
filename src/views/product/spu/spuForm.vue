@@ -1,9 +1,52 @@
 <script setup lang="ts">
+import { SpuData } from '@/api/product/spu/type'
+import { ref } from 'vue'
+import { SpuImage, SaleAttr, HasSaleAttr } from '../../../api/product/spu/type'
+import {
+  reqAllTradeMark,
+  reqSpuImageList,
+} from '../../../api/product/spu/index'
+import {
+  AllTradeMark,
+  SpuHasImage,
+  SaleAttrResponseData,
+} from '../../../api/product/spu/type'
+import {
+  reqSpuHasSaleAttr,
+  reqAllSaleAttr,
+} from '../../../api/product/spu/index'
+import {
+  HasSaleAttrResponseData,
+  Trademark,
+} from '../../../api/product/spu/type'
+
 let $emit = defineEmits(['changeScene'])
 // 点击取消按钮，通知父组件切换场景
 const cancel = () => {
   $emit('changeScene', 0)
 }
+// 存储已有的 SPU 数据
+let allTradeMark = ref<Trademark[]>([])
+let imgList = ref<SpuImage[]>([])
+let saleAttr = ref<SaleAttr[]>([])
+let allSaleAttr = ref<HasSaleAttr[]>([])
+// 子组件写一个方法
+const initHasSpuData = async (spu: SpuData) => {
+  // spu 即为父组件传递来的 SPU 对象(不完整)
+  // 获取全部品牌数据
+  let result: AllTradeMark = await reqAllTradeMark()
+  allTradeMark.value = result.data
+  // 获取某一个品牌旗下全部售卖商品的图片
+  let result1: SpuHasImage = await reqSpuImageList(spu.id as number)
+  imgList.value = result1.data
+  // 获取已有的 SPU 销售属性的数据
+  let result2: SaleAttrResponseData = await reqSpuHasSaleAttr(spu.id as number)
+  saleAttr.value = result2.data
+  // 获取整个项目全部 SPU 的销售属性
+  let result3: HasSaleAttrResponseData = await reqAllSaleAttr()
+  allSaleAttr.value = result3.data
+}
+defineExpose({ initHasSpuData })
 </script>
 
 <template>
