@@ -1,0 +1,3516 @@
+Project Path: /Users/lixinyang/project/GuiguMall/src
+
+Source Tree:
+
+```
+src
+├── App.vue
+├── main.ts
+├── layout
+│   ├── index.vue
+│   ├── tabbar
+│   │   ├── index.vue
+│   │   ├── breadcrumb
+│   │   │   └── index.vue
+│   │   └── setting
+│   │       └── index.vue
+│   ├── logo
+│   │   └── index.vue
+│   ├── menu
+│   │   └── index.vue
+│   └── main
+│       └── index.vue
+├── utils
+│   ├── request.ts
+│   ├── token.ts
+│   └── time.ts
+├── setting.ts
+├── styles
+│   ├── index.scss
+│   ├── reset.scss
+│   └── variable.scss
+├── components
+│   ├── Pagination
+│   │   └── index.vue
+│   ├── Category
+│   │   └── index.vue
+│   ├── SvgIcon
+│   │   └── index.vue
+│   ├── HelloWorld.vue
+│   ├── Test.vue
+│   └── index.ts
+├── vite-env.d.ts
+├── api
+│   ├── user
+│   │   ├── type.ts
+│   │   └── index.ts
+│   └── product
+│       ├── attr
+│       │   ├── type.ts
+│       │   └── index.ts
+│       ├── spu
+│       │   ├── type.ts
+│       │   └── index.ts
+│       └── trademark
+│           ├── type.ts
+│           └── index.ts
+├── permission.ts
+├── views
+│   ├── home
+│   │   └── index.vue
+│   ├── product
+│   │   ├── attr
+│   │   │   └── index.vue
+│   │   ├── spu
+│   │   │   ├── index.vue
+│   │   │   ├── skuForm.vue
+│   │   │   └── spuForm.vue
+│   │   ├── sku
+│   │   │   └── index.vue
+│   │   └── trademark
+│   │       └── index.vue
+│   ├── screen
+│   │   └── index.vue
+│   ├── 404
+│   │   └── index.vue
+│   ├── acl
+│   │   ├── role
+│   │   │   └── index.vue
+│   │   ├── user
+│   │   │   └── index.vue
+│   │   └── permission
+│   │       └── index.vue
+│   └── login
+│       └── index.vue
+├── assets
+│   ├── vue.svg
+│   ├── images
+│   │   ├── error_images
+│   │   │   ├── 404.png
+│   │   │   ├── 401.png
+│   │   │   └── cloud.png
+│   │   ├── tabbar-bg.png
+│   │   ├── login_form.png
+│   │   ├── notData.png
+│   │   └── background.jpg
+│   └── icons
+│       ├── exit-full.svg
+│       ├── snow.svg
+│       ├── home.svg
+│       ├── copyright.svg
+│       ├── logout.svg
+│       ├── lock.svg
+│       ├── welcome.svg
+│       ├── refresh.svg
+│       ├── loading.svg
+│       ├── full-screen.svg
+│       └── phone.svg
+├── store
+│   ├── index.ts
+│   └── modules
+│       ├── category.ts
+│       ├── types
+│       │   └── type.ts
+│       ├── setting.ts
+│       └── user.ts
+└── router
+    ├── routes.ts
+    └── index.ts
+
+```
+
+`/Users/lixinyang/project/GuiguMall/src/App.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>
+    <router-view></router-view>
+  </div>
+</template>
+
+<style scoped></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/main.ts`:
+
+```````ts
+import { createApp } from 'vue'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import App from '@/App.vue'
+//@ts-expect-error 忽略当前文件ts类型的检测否则有红色提示(打包会失败)
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+// svg 图标需要的依赖
+import 'virtual:svg-icons-register'
+// 引入自定义插件对象，引入整个项目的全局组件
+import globalComponent from '@/components'
+// 引入模板的全局样式
+import '@/styles/index.scss'
+// 引入路由
+import router from './router'
+// 引入仓库
+import pinia from './store'
+import './permission'
+const app = createApp(App)
+// 安装自定义插件
+app.use(globalComponent)
+app.use(ElementPlus, {
+  locale: zhCn,
+})
+// 注册路由
+app.use(router)
+// 安装仓库
+app.use(pinia)
+app.mount('#app')
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/layout/index.vue`:
+
+```````vue
+<script setup lang="ts">
+// 引入左侧菜单logo
+import Logo from './logo/index.vue'
+// 引入菜单组件
+import Menu from './menu/index.vue'
+// 获取用户相关的仓库
+import useUserStore from '@/store/modules/user'
+// 右侧内容展示区
+import Main from './main/index.vue'
+// 获取路由对象
+import { useRoute } from 'vue-router'
+// 引入tabbar组件
+import Tabbar from './tabbar/index.vue'
+import useLayoutSettingStore from '../store/modules/setting'
+let userStore = useUserStore()
+// 获取路由对象
+let $route = useRoute()
+defineOptions({
+  name: 'Layout',
+})
+
+let LayoutSettingStore = useLayoutSettingStore()
+</script>
+
+<template>
+  <div class="layout_container">
+    <!-- 左侧菜单 -->
+    <div class="layout_slider">
+      <Logo></Logo>
+      <!-- 展示菜单 -->
+      <!-- 滚动组件 -->
+      <el-scrollbar height="" class="scrollbar">
+        <!-- 菜单组件 -->
+        <el-menu
+          :default-active="$route.path"
+          background-color="#001529"
+          text-color="white"
+          :collapse="LayoutSettingStore.fold ? true : false"
+        >
+          <Menu :menuList="userStore.menuRoutes"></Menu>
+        </el-menu>
+      </el-scrollbar>
+    </div>
+    <!-- 顶部导航 -->
+    <div
+      class="layout_tabbar"
+      :class="{ fold: LayoutSettingStore.fold ? true : false }"
+    >
+      <!-- layout组件的顶部导航 -->
+      <Tabbar></Tabbar>
+    </div>
+    <!-- 内容展示区 -->
+    <div
+      class="layout_main"
+      :class="{ fold: LayoutSettingStore.fold ? true : false }"
+    >
+      <Main></Main>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.layout_container {
+  width: 100%;
+  height: 100vh;
+  .layout_slider {
+    width: $base-menu-width;
+    height: 100vh;
+    background-color: $base-menu-background;
+    color: white;
+    transition: all 0.3s;
+    .scrollbar {
+      height: calc(100vh - $base-menu-logo-height);
+      .el-menu {
+        border-right: none;
+      }
+    }
+  }
+  .layout_tabbar {
+    position: fixed;
+    width: calc(100% - $base-menu-width);
+    height: $base_tabbar-height;
+    top: 0px;
+    left: $base-menu-width;
+    transition: all 0.3s;
+    &.fold {
+      width: calc(100vw - $base-menu-min-width);
+      left: $base-menu-min-width;
+    }
+  }
+  .layout_main {
+    position: absolute;
+    width: calc(100% - $base-menu-width);
+    height: calc(100vh - $base_tabbar-height);
+    left: $base-menu-width;
+    top: $base_tabbar-height;
+    padding: 20px;
+    overflow: auto;
+    transition: all 0.3s;
+    &.fold {
+      width: calc(100vw - $base-menu-min-width);
+      left: $base-menu-min-width;
+    }
+  }
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/layout/tabbar/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import BreadCrumb from './breadcrumb/index.vue'
+import Setting from './setting/index.vue'
+defineOptions({
+  name: 'Tabbar',
+})
+</script>
+
+<template>
+  <div class="tabbar">
+    <div class="tabbar_left">
+      <BreadCrumb></BreadCrumb>
+    </div>
+    <div class="tabbar_right">
+      <Setting></Setting>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.tabbar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  background-image: linear-gradient(
+    to right,
+    rgb(239, 235, 235),
+    rgb(230, 161, 161),
+    rgb(250, 128, 128)
+  );
+  .tabbar_left {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+  }
+  .tabbar_right {
+    display: flex;
+    align-items: center;
+  }
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/layout/tabbar/breadcrumb/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import useLayoutSettingStore from '@/store/modules/setting'
+import { useRoute } from 'vue-router'
+
+let LayoutSettingStore = useLayoutSettingStore()
+let $route = useRoute()
+// 点击图标的方法
+const changeIcon = () => {
+  LayoutSettingStore.fold = !LayoutSettingStore.fold
+}
+defineOptions({
+  name: 'Breadcrumb',
+})
+</script>
+
+<template>
+  <!-- 顶部左侧的静态 -->
+  <el-icon style="margin-right: 10px" @click="changeIcon">
+    <component :is="LayoutSettingStore.fold ? 'Fold' : 'Expand'"></component>
+  </el-icon>
+  <!-- 左侧面包屑 -->
+  <el-breadcrumb separator-icon="ArrowRight">
+    <el-breadcrumb-item
+      v-for="(item, index) in $route.matched"
+      :key="index"
+      v-show="item.meta.title"
+      :to="item.path"
+    >
+      <el-icon>
+        <component :is="item.meta.icon"></component>
+      </el-icon>
+      <!-- 面包屑展示对应路由的标题 -->
+      <span style="margin: 0px 5px">{{ item.meta.title }}</span>
+    </el-breadcrumb-item>
+  </el-breadcrumb>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/layout/tabbar/setting/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import useLayoutSettingStore from '../../../store/modules/setting'
+import useUserStore from '../../../store/modules/user'
+import { useRouter, useRoute } from 'vue-router'
+defineOptions({
+  name: 'Setting',
+})
+const LayoutSettingStore = useLayoutSettingStore()
+
+const updateRefresh = () => {
+  LayoutSettingStore.refresh = !LayoutSettingStore.refresh
+}
+
+const fullScreen = () => {
+  // DOM对象的一个属性，可以用来判断当前是不是全屏
+  let full = document.fullscreenElement
+  if (!full) {
+    document.documentElement.requestFullscreen()
+  } else {
+    document.exitFullscreen()
+  }
+}
+
+const userStore = useUserStore()
+const $router = useRouter()
+const $route = useRoute()
+// 退出登录的回调
+const logout = async () => {
+  // 1. 向服务器发请求[退出登录接口]
+  // 2. 清除仓库中的相关数据
+  await userStore.userLogout()
+  // 3. 跳转登录页面
+  $router.push({ path: '/login', query: { redirect: $route.path } })
+}
+</script>
+
+<template>
+  <el-button
+    type="primary"
+    size="small"
+    icon="Refresh"
+    circle
+    @click="updateRefresh"
+  ></el-button>
+  <el-button
+    type="primary"
+    size="small"
+    icon="FullScreen"
+    circle
+    @click="fullScreen"
+  ></el-button>
+  <el-button type="primary" size="small" icon="Setting" circle></el-button>
+  <img
+    :src="userStore.avatar"
+    style="width: 24px; height: 24px; margin: 0px 10px; border-radius: 50%"
+  />
+  <el-dropdown>
+    <span class="el-dropdown-link">
+      {{ userStore.username }}
+      <el-icon class="el-icon--right">
+        <arrow-down />
+      </el-icon>
+    </span>
+    <template #dropdown>
+      <el-dropdown-menu>
+        <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+      </el-dropdown-menu>
+    </template>
+  </el-dropdown>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/layout/logo/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import setting from '@/setting'
+defineOptions({
+  name: 'Logo',
+})
+</script>
+
+<template>
+  <div class="logo">
+    <img :src="setting.logo" alt="GuiguMall" v-if="!setting.logoHidden" />
+    <p>{{ setting.title }}</p>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.logo {
+  width: 100%;
+  height: $base-menu-logo-height;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  img {
+    width: 30px;
+    height: 30px;
+  }
+  p {
+    font-size: $base-logo-title-fontSize;
+    margin-left: 10px;
+  }
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/layout/menu/index.vue`:
+
+```````vue
+<script setup lang="ts">
+// 获取父组件传递的路由数据
+defineProps(['menuList'])
+defineOptions({
+  name: 'MyMenu',
+})
+import { useRouter } from 'vue-router'
+// 获取路由器对象
+let $router = useRouter()
+// 点击菜单的回调
+const goRoute = (vc: any) => {
+  $router.push(vc.index)
+}
+</script>
+
+<template>
+  <div>
+    <template v-for="item in menuList" :key="item.path">
+      <template v-if="!item.meta.hidden">
+        <!-- 没有子路由 -->
+        <el-menu-item v-if="!item.children" :index="item.path" @click="goRoute">
+          <el-icon>
+            <component :is="item.meta.icon"></component>
+          </el-icon>
+          <template #title>
+            <span>{{ item.meta.title }}</span>
+          </template>
+        </el-menu-item>
+        <!-- 有子路由，但只有一个 -->
+        <el-menu-item
+          v-if="item.children && item.children.length == 1"
+          :index="item.children[0].path"
+          @click="goRoute"
+        >
+          <el-icon>
+            <component :is="item.children[0].meta.icon"></component>
+          </el-icon>
+          <template #title>
+            <span>{{ item.children[0].meta.title }}</span>
+          </template>
+        </el-menu-item>
+        <!-- 有子路由，且多于一个 -->
+        <el-sub-menu
+          :index="item.path"
+          v-if="item.children && item.children.length > 1"
+        >
+          <template #title>
+            <el-icon>
+              <component :is="item.meta.icon"></component>
+            </el-icon>
+            <span>{{ item.meta.title }}</span>
+          </template>
+          <MyMenu :menuList="item.children"></MyMenu>
+        </el-sub-menu>
+      </template>
+    </template>
+  </div>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/layout/main/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import useLayoutSettingStore from '@/store/modules/setting'
+import { watch, ref, nextTick } from 'vue'
+
+defineOptions({
+  name: 'MyMain',
+})
+const LayoutSettingStore = useLayoutSettingStore()
+// 控制当前组件是否销毁重建
+let flag = ref(true)
+watch(
+  () => LayoutSettingStore.refresh,
+  () => {
+    flag.value = false
+    nextTick(() => {
+      flag.value = true
+    })
+  },
+)
+</script>
+
+<template>
+  <router-view v-slot="{ Component }">
+    <transition name="fade">
+      <component :is="Component" v-if="flag" />
+    </transition>
+  </router-view>
+</template>
+
+<style scoped lang="scss">
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  transition: all 0.3s;
+}
+
+.fade-enter-to {
+  opacity: 1;
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/utils/request.ts`:
+
+```````ts
+// 进行axios的二次封装：使用请求与响应拦截器
+import useUserStore from '@/store/modules/user'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
+// 第一步：利用axios对象的create方法，创建axios实例
+const request = axios.create({
+  // 基础路径
+  baseURL: import.meta.env.VITE_APP_BASE_API, // 基础路径会带上/api
+  timeout: 5000, // 超时时间设置
+})
+
+// 第二步：给request实例添加请求与响应拦截器
+request.interceptors.request.use((config) => {
+  const userStore = useUserStore()
+  if (userStore.token) {
+    config.headers.token = userStore.token
+  }
+  // config配置对象，headers属性请求头，经常给服务器端携带公共参数
+  // 返回配置对象
+  return config
+})
+
+// 第三步，响应拦截器
+request.interceptors.response.use(
+  (response) => {
+    // 成功回调
+    // 简化数据
+    return response.data
+  },
+  (error) => {
+    // 失败回调，处理http网络错误
+    // 定义一个变量：存储网络错误信息
+    let message = ''
+    const status = error.response.status
+    switch (status) {
+      case 401:
+        message = 'TOKEN过期'
+        break
+      case 403:
+        message = '无权访问'
+        break
+      case 404:
+        message = '地址错误'
+        break
+      case 500:
+        message = '服务器出现问题'
+        break
+      default:
+        message = '网络出现问题'
+        break
+    }
+    // 提示错误信息
+    ElMessage({
+      type: 'error',
+      message,
+    })
+    return Promise.reject(error)
+  },
+)
+
+// 对外暴露
+export default request
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/utils/token.ts`:
+
+```````ts
+// 封装本地存储数据与读取数据的方法
+export const SET_TOKEN = (token: string) => {
+  localStorage.setItem('TOKEN', token)
+}
+
+export const GET_TOKEN = () => localStorage.getItem('TOKEN')
+
+export const REMOVE_TOKEN = () => {
+  localStorage.removeItem('TOKEN')
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/utils/time.ts`:
+
+```````ts
+export const getTime = () => {
+  let message = ''
+  const hours = new Date().getHours()
+  if (hours <= 9) message = '早上'
+  else if (hours <= 12) message = '上午'
+  else if (hours <= 18) message = '下午'
+  else message = '晚上'
+  return message
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/setting.ts`:
+
+```````ts
+// 用于项目的一些logo、标题的配置
+export default {
+  title: '硅谷甄选运营平台', // 项目标题
+  logo: '/public/logo.png', // logo的资源路径
+  logoHidden: false, // logo 是否隐藏
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/styles/index.scss`:
+
+```````scss
+// 引入清除默认样式
+@import './reset.scss';
+
+// 滚动条外观设计
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: $base-menu-background;
+}
+
+::-webkit-scrollbar-thumb {
+  width: 10px;
+  background-color: yellowgreen;
+  border-radius: 10px;
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/styles/reset.scss`:
+
+```````scss
+/**
+ * ENGINE
+ * v0.2 | 20150615
+ * License: none (public domain)
+ */
+
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+
+  outline: none;
+}
+
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  font: inherit;
+  font-size: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  vertical-align: baseline;
+
+  border: 0;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+
+body {
+  line-height: 1;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+blockquote,
+q {
+  quotes: none;
+  &:before,
+  &:after {
+    content: '';
+    content: none;
+  }
+}
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+
+  position: relative;
+
+  vertical-align: baseline;
+}
+sup {
+  top: -0.5em;
+}
+sub {
+  bottom: -0.25em;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+input,
+textarea,
+button {
+  font-family: inhert;
+  font-size: inherit;
+
+  color: inherit;
+}
+
+select {
+  text-indent: 0.01px;
+  text-overflow: '';
+
+  border: 0;
+  border-radius: 0;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+select::-ms-expand {
+  display: none;
+}
+
+code,
+pre {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/styles/variable.scss`:
+
+```````scss
+// 项目提供scss全局变量
+$color: red;
+
+// 左侧菜单的宽度
+$base-menu-width: 260px;
+$base-menu-min-width: 50px;
+
+// 左侧菜单的背景颜色
+$base-menu-background: #001529;
+
+// 顶部导航的宽度
+$base_tabbar-height: 50px;
+
+// 左侧菜单logo高度设置
+$base-menu-logo-height: 50px;
+
+// 左侧菜单logo右侧文字的大小
+$base-logo-title-fontSize: 20px;
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/components/Pagination/index.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>分页器全局组件</div>
+</template>
+
+<style scoped></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/components/Category/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import useCategory from '../../store/modules/category'
+let categoryStore = useCategory()
+// 通知仓库获取一级分类
+const getC1 = () => {
+  categoryStore.getC1()
+}
+// 一级分类下拉菜单的change事件
+const handler = () => {
+  // 清空二三级分类数据
+  categoryStore.c2Id = ''
+  categoryStore.c3Arr = []
+  categoryStore.c3Id = ''
+  categoryStore.getC2()
+}
+// 二级分类下拉菜单的change事件
+const handler2 = () => {
+  // 清空三级选中
+  categoryStore.c3Id = ''
+  categoryStore.getC3()
+}
+onMounted(() => {
+  getC1()
+})
+
+// 接受父组件传递的scene场景数值
+defineProps(['scene'])
+</script>
+
+<template>
+  <el-card>
+    <el-form :inline="true" class="flex-form">
+      <el-form-item label="一级分类">
+        <el-select
+          v-model="categoryStore.c1Id"
+          @change="handler"
+          :disabled="!(scene == 0)"
+        >
+          <!-- label即为显示文字，value属性即为select菜单选择属性 -->
+          <el-option
+            v-for="(c1, index) in categoryStore.c1Arr"
+            :key="c1.id"
+            :label="c1.name"
+            :value="c1.id"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="二级分类">
+        <el-select
+          v-model="categoryStore.c2Id"
+          @change="handler2"
+          :disabled="!(scene == 0)"
+        >
+          <el-option
+            v-for="(c2, index) in categoryStore.c2Arr"
+            :key="c2.id"
+            :label="c2.name"
+            :value="c2.id"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="三级分类">
+        <el-select v-model="categoryStore.c3Id" :disabled="!(scene == 0)">
+          <el-option
+            v-for="(c3, index) in categoryStore.c3Arr"
+            :key="c3.id"
+            :label="c3.name"
+            :value="c3.id"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+    </el-form>
+  </el-card>
+</template>
+
+<style scoped lang="scss">
+.flex-form {
+  display: flex;
+  justify-content: space-between;
+  .el-form-item {
+    flex: 1;
+  }
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/components/SvgIcon/index.vue`:
+
+```````vue
+<template>
+  <div>
+    <svg :style="{ width: width, height: height }">
+      <use :xlink:href="prefix + name" :fill="color"></use>
+    </svg>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps({
+  //xlink:href属性值的前缀
+  prefix: {
+    type: String,
+    default: '#icon-',
+  },
+  //svg矢量图的名字
+  name: String,
+  //svg图标的颜色
+  color: {
+    type: String,
+    default: '',
+  },
+  //svg宽度
+  width: {
+    type: String,
+    default: '16px',
+  },
+  //svg高度
+  height: {
+    type: String,
+    default: '16px',
+  },
+})
+</script>
+<style scoped></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/components/HelloWorld.vue`:
+
+```````vue
+<script setup lang="ts">
+import { ref } from 'vue'
+
+defineProps<{ msg: string }>()
+
+const count = ref(0)
+</script>
+
+<template>
+  <h1>{{ msg }}</h1>
+
+  <div class="card">
+    <button type="button" @click="count++">count is {{ count }}</button>
+    <p>
+      Edit
+      <code>components/HelloWorld.vue</code>
+      to test HMR
+    </p>
+  </div>
+
+  <p>
+    Check out
+    <a href="https://vuejs.org/guide/quick-start.html#local" target="_blank">
+      create-vue
+    </a>
+    , the official Vue + Vite starter
+  </p>
+  <p>
+    Install
+    <a href="https://github.com/vuejs/language-tools" target="_blank">Volar</a>
+    in your IDE for a better DX
+  </p>
+  <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>
+</template>
+
+<style scoped>
+.read-the-docs {
+  color: #888;
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/components/Test.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div></div>
+</template>
+
+<style scoped></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/components/index.ts`:
+
+```````ts
+// 引入项目中的全部组件
+import SvgIcon from '@/components/SvgIcon/index.vue'
+import Pagination from '@/components/Pagination/index.vue'
+import Category from '@/components/Category/index.vue'
+import { App } from 'vue'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+
+// 全局对象
+const allGlobalComponent = { SvgIcon, Pagination, Category }
+// 对外暴露插件对象
+export default {
+  // 务必叫install方法
+  install(app: App<Element>) {
+    // 注册项目全部的全局组件
+    Object.keys(allGlobalComponent).forEach((key) => {
+      app.component(
+        key,
+        allGlobalComponent[key as keyof typeof allGlobalComponent],
+      )
+    })
+    // 将element-plus的图标注册为全局组件
+    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+      app.component(key, component)
+    }
+  },
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/vite-env.d.ts`:
+
+```````ts
+/// <reference types="vite/client" />
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/api/user/type.ts`:
+
+```````ts
+// 定义用户相关的数据的ts类型
+// 用户登陆接口携带参数的ts类型
+export interface loginFormData {
+  username: string
+  password: string
+}
+
+// 定义全部接口返回数据都拥有的ts类型
+export interface ResponseData {
+  code: number
+  message: string
+  ok: boolean
+}
+
+// 定义登录接口返回数据类型
+export interface loginResponseData extends ResponseData {
+  data: string
+}
+
+// 定义获取用户信息返回的数据类型
+export interface userInfoResponseData extends ResponseData {
+  data: {
+    routes: string[]
+    buttons: string[]
+    roles: string[]
+    name: string
+    avatar: string
+  }
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/api/user/index.ts`:
+
+```````ts
+// 统一管理项目用户相关接口
+import request from '@/utils/request'
+import type {
+  loginFormData,
+  loginResponseData,
+  userInfoResponseData,
+} from './type'
+// 项目的用户相关的请求地址
+enum API {
+  LOGIN_URL = '/admin/acl/index/login',
+  USERINFO_URL = '/admin/acl/index/info',
+  LOGOUT_URL = '/admin/acl/index/logout',
+}
+
+// 登录接口
+export const reqLogin = (data: loginFormData) =>
+  request.post<any, loginResponseData>(API.LOGIN_URL, data)
+
+// 获取用户信息
+export const reqUserInfo = () =>
+  request.get<any, userInfoResponseData>(API.USERINFO_URL)
+
+// 退出登录
+export const reqLogout = () => request.post<any, any>(API.LOGOUT_URL)
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/api/product/attr/type.ts`:
+
+```````ts
+// 分类相关数据的ts类型
+export interface ResponseData {
+  code: number
+  message: string
+  ok: boolean
+}
+
+export interface CategoryObj {
+  id: number | string
+  name: string
+  category1Id?: number
+  category2Id?: number
+}
+
+// 响应的分类接口返回数据的类型
+export interface CategoryResponseData extends ResponseData {
+  data: CategoryObj[]
+}
+
+// 属性与属性值的ts类型
+// 属性值对象的ts类型
+export interface AttrValue {
+  id?: number
+  valueName: string
+  attrId?: number
+  flag?: boolean
+}
+
+// 存储每个属性值的数组
+export type AttrValueList = AttrValue[]
+
+// 属性对象
+export interface Attr {
+  id?: number
+  attrName: string
+  attrValueList: AttrValueList
+  categoryId: number | string
+  categoryLevel: number
+}
+
+// 存储属性对象数组的类型
+export type AttrList = Attr[]
+
+// 属性接口返回的数据类型
+export interface AttrResponseData extends ResponseData {
+  data: AttrList
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/api/product/attr/index.ts`:
+
+```````ts
+// 书写属性管理的api
+import request from '@/utils/request'
+import { Attr, AttrResponseData, CategoryResponseData } from './type'
+// 属性管理模块地址
+enum API {
+  // 一级分类地址
+  C1_URL = 'admin/product/getCategory1',
+  // 二级分类地址
+  C2_URL = 'admin/product/getCategory2/',
+  // 三级分类
+  C3_URL = 'admin/product/getCategory3/',
+  // 获取分类已有的属性
+  ATTR_URL = 'admin/product/attrInfoList/',
+  // 添加或修改已有属性的接口
+  ADDORUPDATEATTR_URL = 'admin/product/saveAttrInfo/',
+  // 删除属性
+  DELETEATTR_URL = 'admin/product/deleteAttr/',
+}
+// 获取一级分类
+export const reqC1 = () => request.get<any, CategoryResponseData>(API.C1_URL)
+// 获取二级分类
+export const reqC2 = (category1Id: number) =>
+  request.get<any, CategoryResponseData>(API.C2_URL + category1Id)
+// 获取三级分类
+export const reqC3 = (category2Id: number) =>
+  request.get<any, CategoryResponseData>(API.C3_URL + category2Id)
+// 获取对应分类下已有的属性与属性值
+export const reqAttr = (
+  category1Id: string | number,
+  category2Id: string | number,
+  category3Id: string | number,
+) =>
+  request.get<any, AttrResponseData>(
+    API.ATTR_URL + `${category1Id}/${category2Id}/${category3Id}`,
+  )
+// 新增或修改已有的属性接口
+export const reqAddOrUpdateAttr = (data: Attr) =>
+  request.post<any, any>(API.ADDORUPDATEATTR_URL, data)
+// 删除已有属性的接口
+export const reqRemoveAttr = (attrId: number) =>
+  request.delete<any, any>(API.DELETEATTR_URL + attrId)
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/api/product/spu/type.ts`:
+
+```````ts
+// 服务器全部接口返回的数据类型
+export interface ResponseData {
+  code: number
+  message: string
+  ok: boolean
+}
+
+// spu数据的ts类型
+export interface SpuData {
+  id?: number
+  spuName: string
+  description: string
+  category3Id: number
+  tmId: number
+  spuSaleAttrList: null
+  spuImageList: null
+}
+
+// 数组包含元素都是已有的spu数据的类型
+export type Records = SpuData[]
+// 定义获取已有的spu接口返回的数据的类型
+export interface HasSpuResponseData extends ResponseData {
+  data: {
+    records: Records
+    total: number
+    size: number
+    current: number
+    searchCount: boolean
+    pages: number
+  }
+}
+
+// 所有品牌数据的ts类型
+export interface Trademark {
+  id: number
+  tmName: string
+  logoUrl: string
+}
+
+// 品牌接口返回的数据类型
+export interface AllTradeMark extends ResponseData {
+  data: Trademark[]
+}
+
+// 商品图片的ts类型
+export interface SpuImage {
+  id: number
+  createTime: string
+  updateTime: string
+  spuId: number
+  imgName: string
+  imgUrl: string
+}
+
+// 已有的spu的照片墙数据返回类型
+export interface SpuHasImage extends ResponseData {
+  data: SpuImage[]
+}
+
+// 商品销售属性的ts类型
+export interface SaleAttrValue {
+  id?: number
+  createTime: null
+  updateTime: null
+  spuId: number
+  baseSaleAttrId: number
+  saleAttrValueName: string
+  saleAttrName: string
+  ischecked: null
+}
+
+// 销售属性对象类型
+export interface SaleAttr {
+  id?: number
+  createTime: null
+  updateTime: null
+  spuId: number
+  baseSaleAttrId: number
+  saleAttrName: string
+  spuSaleAttrValueList: SaleAttrValue[]
+}
+
+// SPU 已有的销售属性接口返回的类型
+export interface SaleAttrResponseData extends ResponseData {
+  data: SaleAttr[]
+}
+
+// 已有的全部SPU的返回数据的类型
+export interface HasSaleAttr {
+  id: number
+  name: string
+}
+
+export interface HasSaleAttrResponseData extends ResponseData {
+  data: HasSaleAttr[]
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/api/product/spu/index.ts`:
+
+```````ts
+import request from '@/utils/request'
+import {
+  AllTradeMark,
+  HasSaleAttrResponseData,
+  HasSpuResponseData,
+  SaleAttrResponseData,
+  SpuHasImage,
+} from './type'
+
+enum API {
+  // 获取已有的spu数据
+  HASSPU_URL = '/admin/product/',
+  ALL_TRADEMARK_URL = '/admin/product/baseTrademark/getTrademarkList/',
+  // 获取某一个spu下全部售卖商品图片
+  IMAGE_URL = '/admin/product/spuImageList/',
+  // 获取spu下全部已有的销售属性接口地址
+  SPU_HAS_SALE_ATTR_URL = '/admin/product/spuSaleAttrList/',
+  // 获取整个项目全部的销售属性
+  ALL_SALE_ATTR_URL = '/admin/product/baseSaleAttrList',
+}
+export const reqHasSpu = (
+  page: number,
+  limit: number,
+  category3Id: number | string,
+) =>
+  request.get<any, HasSpuResponseData>(
+    API.HASSPU_URL + `${page}/${limit}?category3Id=${category3Id}`,
+  )
+
+// 获取全部的spu品牌数据
+export const reqAllTradeMark = () =>
+  request.get<any, AllTradeMark>(API.ALL_TRADEMARK_URL)
+
+// 获取已有SPU下全部商品图片地址
+export const reqSpuImageList = (spuId: number) =>
+  request.get<any, SpuHasImage>(API.IMAGE_URL + spuId)
+
+// 获取已有的SPU拥有多少个销售属性
+export const reqSpuHasSaleAttr = (spuId: number) =>
+  request.get<any, SaleAttrResponseData>(API.SPU_HAS_SALE_ATTR_URL + spuId)
+
+// 获取全部销售属性
+export const reqAllSaleAttr = () =>
+  request.get<any, HasSaleAttrResponseData>(API.ALL_SALE_ATTR_URL)
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/api/product/trademark/type.ts`:
+
+```````ts
+export interface ResponseData {
+  code: number
+  message: number
+  ok: boolean
+}
+// 已有品牌的ts数据类型
+export interface Trademark {
+  id?: number
+  tmName: string
+  logoUrl: string
+}
+// 包含全部品牌数据的类型
+export type Records = Trademark[]
+// 获取已有的全部的品牌数据类型
+export interface TrademarkResponseData extends ResponseData {
+  data: {
+    records: Records
+    total: number
+    size: number
+    current: number
+    searchCount: boolean
+    pages: number
+  }
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/api/product/trademark/index.ts`:
+
+```````ts
+// 品牌管理模块接口
+import request from '@/utils/request'
+import { Trademark, TrademarkResponseData } from './type'
+// 品牌管理模块接口地址
+enum API {
+  // 获取已有品牌接口
+  TRADEMARK_URL = '/admin/product/baseTrademark/',
+  // 添加品牌接口
+  ADD_TRADEMARK_URL = '/admin/product/baseTrademark/saves',
+  // 修改已有品牌
+  UPDATE_TRADEMARK_URL = '/admin/product/baseTrademark/update',
+  // 删除已有的品牌
+  DELETE_URL = '/admin/product/baseTrademark/remove',
+}
+// 获取已有的品牌接口方法
+// page: 第几页，默认第一页
+// limit: 一页有几个品牌数据
+export const reqHasTrademark = (page: number, limit: number) =>
+  request.get<any, TrademarkResponseData>(
+    API.TRADEMARK_URL + `${page}/${limit}`,
+  )
+
+// 添加与修改已有品牌的接口方法
+export const reqAddOrUpdateTrademark = (data: Trademark) => {
+  // 修改已有品牌的数据
+  if (data.id) {
+    return request.put<any, any>(API.UPDATE_TRADEMARK_URL, data)
+  }
+  // 新增品牌
+  else {
+    return request.post<any, any>(API.ADD_TRADEMARK_URL, data)
+  }
+}
+// 删除已有的品牌
+export const reqDeleteTrademark = (id: number) =>
+  request.delete<any, any>(API.DELETE_URL + id)
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/permission.ts`:
+
+```````ts
+// 路由鉴权
+import router from '@/router'
+import nprogress from 'nprogress'
+nprogress.configure({ showSpinner: false })
+// 引入进度条样式
+import 'nprogress/nprogress.css'
+// 获取用户token
+import useUserStore from './store/modules/user'
+import pinia from './store'
+import setting from './setting'
+const userStore = useUserStore(pinia)
+// 全局前置守卫
+router.beforeEach(async (to: any, from: any, next: any) => {
+  document.title = setting.title + '-' + to.meta.title
+  nprogress.start()
+  const token = userStore.token
+  const username = userStore.username
+  // 登录成功
+  if (token) {
+    if (to.path == '/login') {
+      next({ path: '/' })
+    } else {
+      // 如果有用户信息，放行
+      if (username) next()
+      // 如果没有用户信息，则发请求获取用户信息再放行
+      else {
+        try {
+          await userStore.userInfo()
+          next()
+        } catch (error) {
+          // token 过期，获取不到用户信息了
+          // 用户手动修改了本地存储的token
+          // 退出登录
+          await userStore.userLogout()
+          next({ path: 'login', query: { redirect: to.path } })
+        }
+      }
+    }
+  } else {
+    // 未登录
+    if (to.path == '/login') {
+      next()
+    } else {
+      next({ path: '/login', query: { redirect: to.path } })
+    }
+  }
+})
+
+// 全局后置守卫
+router.afterEach((to: any, from: any, next: any) => {
+  nprogress.done()
+})
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/home/index.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>
+    <h1>我是一级路由展示登录成功以后的数据</h1>
+  </div>
+</template>
+
+<style scoped></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/product/attr/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import { reqAttr } from '@/api/product/attr'
+import useCategory from '@/store/modules/category'
+import { watch, ref, reactive, nextTick, onBeforeUnmount } from 'vue'
+import {
+  reqAddOrUpdateAttr,
+  reqRemoveAttr,
+} from '../../../api/product/attr/index'
+import { ElMessage } from 'element-plus'
+import {
+  AttrResponseData,
+  Attr,
+  AttrValue,
+} from '../../../api/product/attr/type'
+const categoryStore = useCategory()
+// 存储已有的属性值
+let attrList = ref<Attr[]>([])
+// 定义卡片内容切换对象
+let scene = ref<number>(0) // scene=0，显示table，1显示添加
+// 收集新增属性的数据
+let attrParams = reactive<Attr>({
+  attrName: '',
+  attrValueList: [],
+  categoryId: '',
+  categoryLevel: 3,
+})
+// 准备一个数组。将来存储对应的组件实例el-input
+let inputArr = ref<any>([])
+
+// 监听三级分类Id的变化，确定了就发请求获取属性
+watch(
+  () => categoryStore.c3Id,
+  () => {
+    // 清空上一次的数据
+    attrList.value = []
+    // 保证三级分类确定了再请求
+    if (!categoryStore.c3Id) return
+    getAttr()
+  },
+)
+
+// 获取已有的属性
+const getAttr = async () => {
+  // 获取分类的id
+  const { c1Id, c2Id, c3Id } = categoryStore
+  const result: AttrResponseData = await reqAttr(c1Id, c2Id, c3Id)
+  if (result.code == 200) {
+    attrList.value = result.data
+  }
+}
+
+// 添加属性按钮的回调
+const addAttr = () => {
+  // 每次点击，先清空数据
+  Object.assign(attrParams, {
+    attrName: '',
+    attrValueList: [],
+    categoryId: categoryStore.c3Id,
+    categoryLevel: 3,
+  })
+  // 切换为修改属性的结构
+  scene.value = 1
+}
+// table中修改已有属性按钮的回调
+const updateAttr = (row: Attr) => {
+  scene.value = 1
+  // 将已有的属性对象赋值给attrParams
+  Object.assign(attrParams, JSON.parse(JSON.stringify(row)))
+}
+// 取消按钮的回调
+const cancel = () => {
+  scene.value = 0
+}
+
+// 添加属性值按钮的回调
+const addAttrValue = () => {
+  attrParams.attrValueList.push({
+    valueName: '',
+    flag: true, // 控制每一个属性值的编辑模式与查看模式的切换
+  })
+  // 获取最后的el-input组件
+  nextTick(() => {
+    inputArr.value[inputArr.value.length - 1].focus()
+  })
+}
+// 保存按钮的回调
+const save = async () => {
+  // 发请求
+  let result = await reqAddOrUpdateAttr(attrParams)
+  if (result.code == 200) {
+    // 切换场景
+    scene.value = 0
+    // 获取全部已有的属性与属性值
+    getAttr()
+    // 提示信息
+    ElMessage({
+      type: 'success',
+      message: attrParams.id ? '修改成功' : '添加成功',
+    })
+  } else {
+    ElMessage({
+      type: 'error',
+      message: attrParams.id ? '修改失败' : '添加失败',
+    })
+  }
+}
+// 属性值表单失去焦点的回调
+const toLook = (row: AttrValue, $index: number) => {
+  // 非法情况判断:值为空
+  if (row.valueName.trim() == '') {
+    // 删除掉对应属性值为空的元素
+    attrParams.attrValueList.splice($index, 1)
+    // 提示信息
+    ElMessage({
+      type: 'error',
+      message: '属性值不能为空',
+    })
+    return
+  }
+  // 非法情况判断：重复值
+  const repeat = attrParams.attrValueList.some((item) => {
+    // 切记把当前的元素排除出去
+    if (item != row) {
+      return item.valueName === row.valueName
+    }
+  })
+  // console.log(repeat)
+  if (repeat) {
+    // 删除掉对应属性值为空的元素
+    attrParams.attrValueList.splice($index, 1)
+    // 提示信息
+    ElMessage({
+      type: 'error',
+      message: '属性值不能重复',
+    })
+    return
+  }
+  row.flag = false
+}
+// 切换为编辑模式的回调
+const toEdit = (row: AttrValue, $index: number) => {
+  row.flag = true
+  // 点击时input元素才出来，需要等一个tick再处理
+  nextTick(() => inputArr.value[$index].focus())
+}
+// 删除某个已有的属性的方法回调
+const deleteAttr = async (attrId: number) => {
+  let result: any = await reqRemoveAttr(attrId)
+  // 删除成功
+  if (result.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '删除成功',
+    })
+    getAttr()
+  } else {
+    ElMessage({
+      type: 'error',
+      message: '删除失败',
+    })
+  }
+}
+// 路由组件卸载的时候清空pinia仓库
+onBeforeUnmount(() => {
+  categoryStore.$reset()
+})
+</script>
+
+<template>
+  <!-- 三级分类全局组件 -->
+  <Category :scene="scene" />
+  <el-card style="margin: 10px 0px">
+    <div v-show="scene == 0">
+      <el-button
+        type="primary"
+        size="default"
+        icon="Plus"
+        :disabled="categoryStore.c3Id ? false : true"
+        @click="addAttr"
+      >
+        添加属性
+      </el-button>
+      <el-table border style="margin: 10px 0px" :data="attrList">
+        <el-table-column
+          label="序号"
+          type="index"
+          align="center"
+          width="80px"
+        ></el-table-column>
+        <el-table-column
+          label="属性名称"
+          width="120px"
+          prop="attrName"
+        ></el-table-column>
+        <el-table-column label="属性值名称">
+          <template #="{ row, $index }">
+            <el-tag
+              v-for="(item, index) in row.attrValueList"
+              :key="item.id"
+              style="margin: 5px"
+            >
+              {{ item.valueName }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="120px">
+          <template #="{ row, $index }">
+            <el-button
+              type="primary"
+              size="small"
+              @click="updateAttr(row)"
+              icon="Edit"
+            ></el-button>
+            <el-popconfirm
+              :title="`确定要删除${row.attrName}吗`"
+              width="200px"
+              @confirm="deleteAttr(row.id)"
+            >
+              <template #reference>
+                <el-button type="danger" size="small" icon="Delete"></el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+    <div v-show="scene == 1">
+      <!-- 展示添加属性与修改属性的结构 -->
+      <el-form :inline="true">
+        <el-form-item label="属性名称">
+          <el-input
+            placeholder="请输入属性名称"
+            v-model="attrParams.attrName"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <el-button
+        type="primary"
+        size="default"
+        icon="Plus"
+        :disabled="attrParams.attrName ? false : true"
+        @click="addAttrValue"
+      >
+        添加属性值
+      </el-button>
+      <el-button type="info" size="default" @click="cancel">取消</el-button>
+      <el-table
+        border
+        style="margin: 10px 0px"
+        :data="attrParams.attrValueList"
+      >
+        <el-table-column
+          width="80px"
+          type="index"
+          align="center"
+          label="序号"
+        ></el-table-column>
+        <el-table-column label="属性值的名称">
+          <!-- row即为当前的属性值对象 -->
+          <template #="{ row, $index }">
+            <el-input
+              :ref="(vc: any) => (inputArr[$index] = vc)"
+              size="small"
+              placeholder="请输入属性值"
+              v-model="row.valueName"
+              v-if="row.flag"
+              @blur="toLook(row, $index)"
+            ></el-input>
+            <div v-else @click="toEdit(row, $index)">{{ row.valueName }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作">
+          <template #="{ row, $index }">
+            <el-button
+              type="danger"
+              size="small"
+              icon="Delete"
+              @click="() => attrParams.attrValueList.splice($index, 1)"
+            ></el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-button
+        type="primary"
+        size="default"
+        @click="save"
+        :disabled="!(attrParams.attrValueList.length > 0)"
+      >
+        保存
+      </el-button>
+      <el-button type="info" size="default" @click="cancel">取消</el-button>
+    </div>
+  </el-card>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/product/spu/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import { reqHasSpu } from '@/api/product/spu'
+import { HasSpuResponseData, Records } from '@/api/product/spu/type'
+import Category from '@/components/Category/index.vue'
+import useCategory from '@/store/modules/category'
+import { ref, watch } from 'vue'
+import spuForm from './spuForm.vue'
+import skuForm from './skuForm.vue'
+import { SpuData } from '../../../api/product/spu/type'
+// 场景编号
+// 0： 显示已有SPU
+// 1： 添加/修改已有的SPU
+// 2： 添加 SKU
+let scene = ref<number>(0)
+// 分页器默认的页码
+let pageNo = ref<number>(1)
+let pageSize = ref<number>(3)
+// 存储已有的spu总个数
+let total = ref<number>(0)
+const categoryStore = useCategory()
+// 存储已有的spu数据
+let records = ref<Records>([])
+// 获取子组件 spuForm
+let spu = ref<any>()
+// 监听三级分类id的变化
+watch(
+  () => categoryStore.c3Id,
+  () => {
+    // 保证有c3Id
+    if (!categoryStore.c3Id) return
+    getHasSpu()
+  },
+)
+
+// 用于获取三级分类下的已有spu
+const getHasSpu = async (pager = 1) => {
+  // 修改当前页码
+  pageNo.value = pager
+  let result: HasSpuResponseData = await reqHasSpu(
+    pageNo.value,
+    pageSize.value,
+    categoryStore.c3Id,
+  )
+  if (result.code == 200) {
+    records.value = result.data.records
+    total.value = result.data.total
+  }
+}
+// 分页器下拉菜单发生变化的时候出发
+const changeSize = () => {
+  getHasSpu()
+}
+// 添加SPU按钮的回调
+const addSpu = () => {
+  changeScene(1)
+}
+// 子组件spu绑定的自定义事件
+const changeScene = (num: number) => {
+  scene.value = num
+}
+
+const updateSpu = (row: SpuData) => {
+  // 切换场景为添加与修改已有的 Spu 结构
+  scene.value = 1
+  // 调用子组件的方法获取完整已有的 SPU 数据
+  spu.value.initHasSpuData(row)
+}
+</script>
+
+<template>
+  <Category :scene="scene"></Category>
+  <el-card style="margin: 10px 0px">
+    <div v-show="scene == 0">
+      <el-button
+        type="primary"
+        size="default"
+        icon="Plus"
+        :disabled="!categoryStore.c3Id"
+        @click="addSpu"
+      >
+        添加 SPU
+      </el-button>
+      <!-- 展示已有的spu数据 -->
+      <el-table style="margin: 10px 0px" border :data="records">
+        <el-table-column
+          label="序号"
+          type="index"
+          align="center"
+          width="80px"
+        ></el-table-column>
+        <el-table-column label="SPU 名称" prop="spuName"></el-table-column>
+        <el-table-column
+          label="SPU 描述"
+          prop="description"
+          :show-overflow-tooltip="true"
+        ></el-table-column>
+        <el-table-column label="SPU 操作">
+          <template #="{ row, $index }">
+            <el-button
+              type="primary"
+              size="small"
+              @click="addSku"
+              icon="Plus"
+              title="添加 SKU"
+            ></el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="updateSpu(row)"
+              icon="Edit"
+              title="修改 SPU"
+            ></el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="addSpu"
+              icon="View"
+              title="查看 SKU 列表"
+            ></el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="addSpu"
+              icon="Delete"
+              title="删除 SPU"
+            ></el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 分页器 -->
+      <el-pagination
+        v-model:current-page="pageNo"
+        v-model:page-size="pageSize"
+        :page-sizes="[3, 5, 7, 9]"
+        :background="true"
+        layout="prev, pager, next, jumper, -> ,sizes, total"
+        :total="total"
+        @current-change="getHasSpu"
+        @size-change="changeSize"
+      />
+    </div>
+    <!-- 添加/修改 SPU 子组件 -->
+    <spuForm ref="spu" v-show="scene == 1" @changeScene="changeScene"></spuForm>
+    <!-- 添加 SKU 子组件 -->
+    <skuForm v-show="scene == 2"></skuForm>
+  </el-card>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/product/spu/skuForm.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>
+    <h1>添加sku的结构</h1>
+  </div>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/product/spu/spuForm.vue`:
+
+```````vue
+<script setup lang="ts">
+import { SpuData } from '@/api/product/spu/type'
+import { ref } from 'vue'
+import { SpuImage, SaleAttr, HasSaleAttr } from '../../../api/product/spu/type'
+import {
+  reqAllTradeMark,
+  reqSpuImageList,
+} from '../../../api/product/spu/index'
+import {
+  AllTradeMark,
+  SpuHasImage,
+  SaleAttrResponseData,
+} from '../../../api/product/spu/type'
+import {
+  reqSpuHasSaleAttr,
+  reqAllSaleAttr,
+} from '../../../api/product/spu/index'
+import {
+  HasSaleAttrResponseData,
+  Trademark,
+} from '../../../api/product/spu/type'
+
+let $emit = defineEmits(['changeScene'])
+// 点击取消按钮，通知父组件切换场景
+const cancel = () => {
+  $emit('changeScene', 0)
+}
+// 存储已有的 SPU 数据
+let allTradeMark = ref<Trademark[]>([])
+let imgList = ref<SpuImage[]>([])
+let saleAttr = ref<SaleAttr[]>([])
+let allSaleAttr = ref<HasSaleAttr[]>([])
+// 子组件写一个方法
+const initHasSpuData = async (spu: SpuData) => {
+  // spu 即为父组件传递来的 SPU 对象(不完整)
+  // 获取全部品牌数据
+  let result: AllTradeMark = await reqAllTradeMark()
+  allTradeMark.value = result.data
+  // 获取某一个品牌旗下全部售卖商品的图片
+  let result1: SpuHasImage = await reqSpuImageList(spu.id as number)
+  imgList.value = result1.data
+  // 获取已有的 SPU 销售属性的数据
+  let result2: SaleAttrResponseData = await reqSpuHasSaleAttr(spu.id as number)
+  saleAttr.value = result2.data
+  // 获取整个项目全部 SPU 的销售属性
+  let result3: HasSaleAttrResponseData = await reqAllSaleAttr()
+  allSaleAttr.value = result3.data
+}
+defineExpose({ initHasSpuData })
+</script>
+
+<template>
+  <el-form ref="form" label-width="auto">
+    <el-form-item label="SPU 名称">
+      <el-input placeholder="请输入 SPU 名称"></el-input>
+    </el-form-item>
+    <el-form-item label="SPU 品牌">
+      <el-select style="width: 200px">
+        <el-option>华为</el-option>
+        <el-option>OPPO</el-option>
+        <el-option>VIVO</el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item label="SPU 描述">
+      <el-input placeholder="请输入描述" type="textarea"></el-input>
+    </el-form-item>
+    <el-form-item label="SPU 照片">
+      <el-upload
+        v-model:file-list="fileList"
+        action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+        list-type="picture-card"
+        :on-preview="handlePictureCardPreview"
+        :on-remove="handleRemove"
+      >
+        <el-icon><Plus /></el-icon>
+      </el-upload>
+
+      <el-dialog v-model="dialogVisible">
+        <img w-full :src="dialogImageUrl" alt="Preview Image" />
+      </el-dialog>
+    </el-form-item>
+    <el-form-item label="SPU 销售属性">
+      <!-- 展示销售属性的下拉菜单 -->
+      <el-select style="width: 200px">
+        <el-option>华为</el-option>
+        <el-option>OPPO</el-option>
+        <el-option>VIVO</el-option>
+      </el-select>
+      <el-button
+        type="primary"
+        size="default"
+        icon="Plus"
+        style="margin-left: 10px"
+      >
+        添加属性值
+      </el-button>
+      <!-- table 展示销售属性与属性值的地方 -->
+      <el-table border style="margin: 10px 0px">
+        <el-table-column
+          type="index"
+          label="序号"
+          width="80px"
+          align="center"
+        ></el-table-column>
+        <el-table-column label="销售属性名称" width="120px"></el-table-column>
+        <el-table-column label="销售属性值"></el-table-column>
+        <el-table-column label="操作" width="100px"></el-table-column>
+      </el-table>
+    </el-form-item>
+    <el-form-item>
+      <el-button type="primary" size="default" @click="">保存</el-button>
+      <el-button type="info" size="default" @click="cancel">取消</el-button>
+    </el-form-item>
+  </el-form>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/product/sku/index.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>
+    <h1>sku管理</h1>
+  </div>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/product/trademark/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import { onMounted, ref, reactive, nextTick } from 'vue'
+import {
+  Records,
+  Trademark,
+  TrademarkResponseData,
+} from '@/api/product/trademark/type'
+import { UploadProps, ElMessage } from 'element-plus'
+import { reqDeleteTrademark } from '../../../api/product/trademark/index'
+import {
+  reqHasTrademark,
+  reqAddOrUpdateTrademark,
+} from '../../../api/product/trademark/index'
+// 当前页码
+let pageNo = ref<number>(1)
+// 每页数据的条数
+let limit = ref<number>(3)
+// 存储已有品牌数据的总数
+let total = ref<number>(0)
+// 存储已有品牌数据
+let trademarkArr = ref<Records>([])
+
+// 获取el-form组件实例
+let formRef = ref()
+
+// 获取已有品牌的接口，封装为函数：在任何情况下想获取数据，调用此函数即可
+const getHasTrademark = async (pager = 1) => {
+  pageNo.value = pager
+  let result: TrademarkResponseData = await reqHasTrademark(
+    pageNo.value,
+    limit.value,
+  )
+  if (result.code == 200) {
+    total.value = result.data.total
+    trademarkArr.value = result.data.records
+  }
+}
+// 组件挂载完毕，发一次请求，获取默认第一页，一页3个已有品牌数据
+onMounted(() => {
+  getHasTrademark()
+})
+
+// 对于当前页码发生改变的回调函数，组件pagination父组件已经回传了页码
+// const changePageNo = () => {
+//   // 当前页码发生变化的时候，再次发请求，获取对应的已有品牌的数据展示
+//   getHasTrademark()
+// }
+
+// 当下拉菜单发生变化的时候会触发此函数
+const sizeChange = () => {
+  // 页码发生变化时，页码归1
+  getHasTrademark()
+}
+// 控制对话框的显示与隐藏
+let dialogFormVisible = ref<boolean>(false)
+// 定义收集新增品牌数据
+let trademarkParams = reactive<Trademark>({
+  tmName: '',
+  logoUrl: '',
+})
+// 添加品牌按钮的回调
+const addTrademark = () => {
+  // 收集的数据清空
+  trademarkParams.tmName = ''
+  trademarkParams.logoUrl = ''
+  trademarkParams.id = 0
+  dialogFormVisible.value = true
+  // 清空验证信息，使用问号来解决刚开始没有formRef的问题
+  // formRef.value?.clearValidate('tmName')
+  nextTick(() => {
+    formRef.value.clearValidate('tmName')
+    formRef.value.clearValidate('logoUrl')
+  })
+}
+// 修改已有品牌的回调
+// row：当前已有的品牌
+const updateTrademark = (row: Trademark) => {
+  dialogFormVisible.value = true
+  nextTick(() => {
+    formRef.value.clearValidate('tmName')
+    formRef.value.clearValidate('logoUrl')
+  })
+  // trademarkParams.id = row.id
+  // // 展示已有品牌的数据
+  // trademarkParams.tmName = row.tmName
+  // trademarkParams.logoUrl = row.logoUrl
+  // ES6 语法合并对象
+  Object.assign(trademarkParams, row)
+}
+// 对话框底部取消按钮
+const cancel = () => {
+  dialogFormVisible.value = false
+}
+// 对话框底部确定按钮
+const confirm = async () => {
+  // 在发请求之前，对表单进行校验
+  // 调用方法进行全部表单项校验，然后执行后面的语法，如果失败后面的语句不会执行
+  await formRef.value.validate()
+  let result: any = await reqAddOrUpdateTrademark(trademarkParams)
+  if (result.code == 200) {
+    // 添加品牌成功
+    // 关闭对话框
+    dialogFormVisible.value = false
+    // 弹出成功消息
+    ElMessage({
+      type: 'success',
+      message: trademarkParams.id ? '修改品牌成功' : '添加品牌成功',
+    })
+    // 更新
+    getHasTrademark(trademarkParams.id ? pageNo.value : 1)
+  } else {
+    // 添加品牌失败
+    // 关闭对话框
+    dialogFormVisible.value = false
+    ElMessage({
+      type: 'error',
+      message: trademarkParams.id ? '修改品牌失败' : '添加品牌失败',
+    })
+  }
+}
+
+const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
+  // 要求：文件的格式必须是jpg,png,gif 4M
+  if (
+    rawFile.type == 'image/png' ||
+    rawFile.type == 'image/jpeg' ||
+    rawFile.type == 'image/gif'
+  ) {
+    if (rawFile.size / 1024 / 1024 < 4) {
+      return true
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '上传的文件大小必须小于4M',
+      })
+      return false
+    }
+  } else {
+    ElMessage({
+      type: 'error',
+      message: '上传的类型必须是PNG/JPEG/GIF',
+    })
+    return false
+  }
+}
+// 图片上传成功的钩子
+const handleAvatarSuccess: UploadProps['onSuccess'] = (
+  response,
+  uploadFile,
+) => {
+  // response 即为当前这次上传图片post请求返回的数据
+  // 收集上传图片的地址
+  trademarkParams.logoUrl = response.data
+  // 图片上传成功，应该清除校验结果
+  formRef.value.clearValidate('logoUrl')
+}
+// 品牌校验自定义规则
+const validatorTmName = (rule: any, value: any, callBack: any) => {
+  // 自定义校验规则
+  if (value.trim().length >= 2) {
+    callBack()
+  } else {
+    callBack(new Error('品牌名称位数大于等于 2 位'))
+  }
+}
+// logo 自定义校验规则
+const validatorLogoUrl = (rule: any, value: any, callBack: any) => {
+  if (value) {
+    callBack()
+  } else {
+    callBack(new Error('LOGO 图片需要上传'))
+  }
+}
+// 表单规则校验对象
+const rules = {
+  tmName: [
+    // required 这个字段务必要校验
+    {
+      required: true,
+      trigger: 'blur',
+      validator: validatorTmName,
+    },
+  ],
+  logoUrl: [{ required: true, validator: validatorLogoUrl }],
+}
+// 气泡确认框的确认回调
+const removeTrademark = async (id: number) => {
+  let result = await reqDeleteTrademark(id)
+  if (result.code == 200) {
+    ElMessage({
+      type: 'success',
+      message: '删除品牌成功',
+    })
+    // 再次获取已有品牌的数据
+    getHasTrademark(
+      trademarkArr.value.length > 1 ? pageNo.value : pageNo.value - 1,
+    )
+  } else {
+    ElMessage({
+      type: 'error',
+      message: '删除品牌失败',
+    })
+  }
+}
+</script>
+
+<template>
+  <div>
+    <el-card class="box-card">
+      <!-- 卡片顶部的添加品牌按钮 -->
+      <el-button
+        type="primary"
+        size="default"
+        icon="plus"
+        @click="addTrademark"
+      >
+        添加品牌
+      </el-button>
+      <!-- 表格组件：用于展示已有的品牌数据 -->
+      <!-- 
+        table
+        * border 可以设置表格纵向是否有边框
+        table-column
+        * lable: 某一个列表
+        * width: 宽度
+        * align: 对齐方式
+      -->
+      <el-table style="margin: 10px 0px" border :data="trademarkArr">
+        <el-table-column
+          label="序号"
+          width="80px"
+          align="center"
+          type="index"
+        ></el-table-column>
+        <el-table-column label="品牌名称">
+          <template #="{ row, $index }">
+            <pre style="color: brown">{{ row.tmName }}</pre>
+          </template>
+        </el-table-column>
+        <el-table-column label="品牌LOGO">
+          <template #="{ row, $index }">
+            <img
+              :src="row.logoUrl"
+              alt="找不到图片！"
+              style="width: 100px; height: 100px"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column label="品牌操作">
+          <template #="{ row, $index }">
+            <el-button
+              type="primary"
+              size="small"
+              icon="edit"
+              @click="updateTrademark(row)"
+            ></el-button>
+            <el-popconfirm
+              :title="`您确定要删除${row.tmName}吗？`"
+              width="250px"
+              icon="Delete"
+              @confirm="removeTrademark(row.id)"
+            >
+              <template #reference>
+                <el-button type="danger" size="small" icon="delete"></el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 分页器组件
+      pagination
+        * v-model: current-page 当前页码
+        * v-model: page-size 每页显示数据的条数
+        * v-model: page-sizes 用于设置下拉菜单的数据
+        * small: 是否使用小型分页器
+        * background 设置分页器按钮背景颜色
+        * layout 设置分页器6个子组件布局
+      -->
+      <el-pagination
+        v-model:current-page="pageNo"
+        v-model:page-size="limit"
+        :page-sizes="[3, 5, 7, 9]"
+        :background="true"
+        layout="prev, pager, next, jumper, ->, sizes, total"
+        :total="400"
+        :pager-count="9"
+        @current-change="getHasTrademark"
+        @size-change="sizeChange"
+      />
+    </el-card>
+    <!-- 对话框组件：添加品牌和修改品牌时使用结构 -->
+    <!-- v-model：属性控制对话框的显示与隐藏 true 显示 false 隐藏 -->
+    <el-dialog
+      v-model="dialogFormVisible"
+      :title="trademarkParams.id ? '修改品牌' : '添加品牌'"
+    >
+      <el-form
+        style="width: 80%"
+        :model="trademarkParams"
+        :rules="rules"
+        ref="formRef"
+      >
+        <el-form-item label="品牌名称" label-width="80px" prop="tmName">
+          <el-input
+            placeholder="请您输入品牌名称"
+            v-model="trademarkParams.tmName"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="品牌 LOGO" label-width="80px" prop="logoUrl">
+          <!-- upload组件属性：action图片上传路径书写，需要带/api -->
+          <el-upload
+            class="avatar-uploader"
+            action="/api/admin/product/fileUpload"
+            :show-file-list="true"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img
+              v-if="trademarkParams.logoUrl"
+              :src="trademarkParams.logoUrl"
+              class="avatar"
+            />
+            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <!-- 具名插槽：footer -->
+      <template #footer>
+        <el-button type="primary" size="default" @click="cancel">
+          取消
+        </el-button>
+        <el-button type="primary" size="default" @click="confirm">
+          确定
+        </el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<style scoped>
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+</style>
+
+<style>
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/screen/index.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>
+    <h1>我是数据大屏一级路由组件</h1>
+  </div>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/404/index.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>
+    <h1>我是一级路由404</h1>
+  </div>
+</template>
+
+<style scoped></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/acl/role/index.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>
+    <h1>角色管理</h1>
+  </div>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/acl/user/index.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div class="box">
+    <h1>用户管理</h1>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.box {
+  width: 100%;
+  height: 400px;
+  background-color: red;
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/acl/permission/index.vue`:
+
+```````vue
+<script setup lang="ts"></script>
+
+<template>
+  <div>
+    <h1>菜单管理</h1>
+  </div>
+</template>
+
+<style scoped lang="scss"></style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/views/login/index.vue`:
+
+```````vue
+<script setup lang="ts">
+import { User, Lock } from '@element-plus/icons-vue'
+import { reactive, ref } from 'vue'
+import useUserStore from '@/store/modules/user.ts'
+import { useRouter, useRoute } from 'vue-router'
+import { ElNotification } from 'element-plus'
+import { getTime } from '@/utils/time'
+let userStore = useUserStore()
+// 获取路由器
+let $router = useRouter()
+const $route = useRoute()
+// 定义变量，控制按钮加载效果
+let loading = ref(false)
+// 收集账号密码的数据
+let loginForm = reactive({
+  username: 'admin',
+  password: '111111',
+})
+// 获取el-form组件
+let loginForms = ref()
+
+// 登录按钮的回调
+const login = async () => {
+  // 保证全部表单校验通过后再发请求
+  await loginForms.value.validate()
+  // 开始加载
+  loading.value = true
+  // 通知仓库发登录请求
+  // 如果请求成功，则跳转到展示数据的地方
+  // 请求失败，则弹出登录失败的信息
+  try {
+    await userStore.userLogin(loginForm)
+    // 先判断路径是否有query参数，有则跳转
+    const redirect: any = $route.query.redirect
+    $router.push({ path: redirect || '/' })
+    // 登录成功的提示信息
+    ElNotification({
+      type: 'success',
+      message: '欢迎回来',
+      title: `HI，${getTime()}好`,
+    })
+    loading.value = false
+  } catch (error) {
+    loading.value = false
+    ElNotification({
+      type: 'error',
+      message: (error as Error).message,
+    })
+  }
+}
+
+// 自定义校验规则的函数
+const validateUserName = (rule: any, value: any, callback: any) => {
+  // rule 即为校验规则对象
+  // value 表单元素文本内容
+  // callback是规则放行函数，如果不符合条件，则注入提示信息
+  if (value.length >= 5) {
+    callback()
+  } else {
+    callback(new Error('账号长度至少5位'))
+  }
+}
+
+const validatePassword = (rule: any, value: any, callback: any) => {
+  // rule 即为校验规则对象
+  // value 表单元素文本内容
+  // callback是规则放行函数，如果不符合条件，则注入提示信息
+  if (value.length >= 6) {
+    callback()
+  } else {
+    callback(new Error('密码长度至少6位'))
+  }
+}
+
+// 定义表单校验需要的配置对象
+const rules = {
+  username: [
+    {
+      trigger: 'change',
+      validator: validateUserName,
+    },
+  ],
+  password: [
+    {
+      trigger: 'change',
+      validator: validatePassword,
+    },
+  ],
+}
+</script>
+
+<template>
+  <div class="login_container">
+    <el-row>
+      <el-col :span="12" :xs="0"></el-col>
+      <el-col :span="12" :xs="24">
+        <el-form
+          class="login_form"
+          :model="loginForm"
+          :rules="rules"
+          ref="loginForms"
+        >
+          <h1>Hello</h1>
+          <h2>欢迎来到硅谷甄选</h2>
+          <el-form-item prop="username">
+            <el-input
+              :prefix-icon="User"
+              v-model="loginForm.username"
+            ></el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input
+              type="password"
+              :prefix-icon="Lock"
+              v-model="loginForm.password"
+              show-password
+            ></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              :loading="loading"
+              class="login_btn"
+              type="primary"
+              size="default"
+              @click="login"
+            >
+              登录
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </el-col>
+    </el-row>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.login_container {
+  width: 100%;
+  height: 100vh;
+  background: url('@/assets/images/background.jpg') no-repeat;
+  background-size: cover;
+  .login_form {
+    position: relative;
+    width: 80%;
+    top: 30vh;
+    background: url('@/assets/images/login_form.png') no-repeat;
+    background-size: cover;
+    padding: 40px;
+    h1 {
+      color: white;
+      font-size: 40px;
+    }
+    h2 {
+      color: white;
+      font-size: 20px;
+      margin: 20px 0px;
+    }
+    .login_btn {
+      width: 100%;
+    }
+  }
+}
+</style>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/vue.svg`:
+
+```````svg
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="37.07" height="36" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 198"><path fill="#41B883" d="M204.8 0H256L128 220.8L0 0h97.92L128 51.2L157.44 0h47.36Z"></path><path fill="#41B883" d="m0 0l128 220.8L256 0h-51.2L128 132.48L50.56 0H0Z"></path><path fill="#35495E" d="M50.56 0L128 133.12L204.8 0h-47.36L128 51.2L97.92 0H50.56Z"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/exit-full.svg`:
+
+```````svg
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1678348729454" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9639" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32"><path d="M344.056 647.377c9.149-1.422 18.828 1.391 25.877 8.44 6.054 6.054 8.983 14.05 8.797 21.982v174.763h-60.074l-0.001-104.389-150.176 150.176L126 855.87l148.342-148.343-112.305 0.002v-60.075h181.546z m310.783 7.358c7.17-7.17 17.062-9.957 26.35-8.362h181.545v60.074l-108.816-0.001 143.631 143.631-42.479 42.48-148.954-148.955V851.48h-60.075V676.718c-0.186-7.933 2.744-15.928 8.798-21.983z m51.278 51.711l-0.001 2.954 2.954-2.954h-2.953z m-387.462 1.082l-1.164-0.001 1.164 1.164v-1.163zM853.94 127.93l42.48 42.48L747.88 318.946h114.853v60.074H681.188c-9.287 1.595-19.18-1.192-26.349-8.362-6.054-6.054-8.984-14.05-8.788-21.983h-0.01V173.914h60.075v101.839l147.823-147.822zM173.472 126l145.805 145.805 0.001-97.891h60.075v174.762c0.186 7.933-2.744 15.929-8.798 21.983-7.048 7.048-16.728 9.861-25.876 8.44l-0.473-0.078H162.66v-60.074h118.8L130.993 168.479 173.472 126z m145.805 190.166l-2.781 2.781h2.781v-2.781z" fill="#000000" p-id="9640"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/snow.svg`:
+
+```````svg
+<svg t="1710641941516" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9759" width="16" height="16"><path d="M888.650667 639.637333a16 16 0 0 1-12.682667 18.741334l-72.117333 13.909333 17.28 64.490667a16 16 0 0 1-30.912 8.277333l-21.728-81.088a16 16 0 0 1 12.426666-19.84l88.992-17.173333a16 16 0 0 1 18.741334 12.693333zM249.728 338.346667a16 16 0 0 1-9.344 18.922666l-69.226667 28.576a16 16 0 0 1-12.213333-29.578666l56.245333-23.221334-16.426666-61.28a16 16 0 0 1 30.912-8.277333l20.053333 74.848zM817.482667 251.968a16 16 0 0 1 9.813333 20.384l-24.277333 69.333333 64.426666 17.514667a16 16 0 1 1-8.394666 30.88l-81.013334-22.037333a16 16 0 0 1-10.901333-20.725334l29.962667-85.546666a16 16 0 0 1 20.384-9.813334zM235.594667 652.48a16 16 0 0 1 11.648 17.6l-10.133334 74.197333a16 16 0 0 1-31.712-4.330666l8.245334-60.288-61.226667-16.64a16 16 0 1 1 8.405333-30.88l74.773334 20.330666zM443.754667 118.901333a16 16 0 0 1 22.570666 1.610667l48.106667 55.509333 47.210667-47.210666a16 16 0 1 1 22.624 22.634666l-59.36 59.36a16 16 0 0 1-23.402667-0.842666l-59.36-68.48a16 16 0 0 1 1.6-22.581334zM502.282667 822.869333a16 16 0 0 1 21.066666-1.365333l59.36 45.664a16 16 0 1 1-19.52 25.365333l-48.213333-37.098666-44.864 44.864a16 16 0 1 1-22.624-22.634667l54.794667-54.794667z" fill="#75C4FE" p-id="9760"></path><path d="M901.28 727.573333a21.333333 21.333333 0 0 1-29.141333 7.808L140.565333 313.013333a21.333333 21.333333 0 1 1 21.333334-36.949333l731.573333 422.368a21.333333 21.333333 0 0 1 7.808 29.141333z" fill="#43AEFC" p-id="9761"></path><path d="M864.533333 566.496a21.333333 21.333333 0 0 1-13.226666 27.114667L736 633.28l14.336 118.890667a21.333333 21.333333 0 0 1-42.368 5.098666l-16.384-136a21.333333 21.333333 0 0 1 14.24-22.72l131.594667-45.290666a21.333333 21.333333 0 0 1 27.114666 13.226666zM342.4 389.706667a21.333333 21.333333 0 0 1-12.896 22.677333l-111.210667 46.506667a21.333333 21.333333 0 1 1-16.458666-39.36l96.010666-40.16-16.362666-115.733334a21.333333 21.333333 0 1 1 42.24-5.973333l18.677333 132.053333zM899.84 285.301333a21.333333 21.333333 0 0 1-7.925333 29.109334L158.773333 734.048a21.333333 21.333333 0 0 1-21.194666-37.024L870.72 277.376a21.333333 21.333333 0 0 1 29.12 7.914667z" fill="#43AEFC" p-id="9762"></path><path d="M742.154667 235.989333a21.333333 21.333333 0 0 1 16.768 25.077334l-23.733334 119.605333 109.952 47.456a21.333333 21.333333 0 1 1-16.906666 39.168l-125.770667-54.272a21.333333 21.333333 0 0 1-12.48-23.744l27.093333-136.512a21.333333 21.333333 0 0 1 25.066667-16.778667zM326.634667 598.24A21.333333 21.333333 0 0 1 339.733333 620.8l-15.765333 119.509333a21.333333 21.333333 0 1 1-42.304-5.578666l13.621333-103.178667-108.256-44.106667a21.333333 21.333333 0 0 1 16.106667-39.509333l123.498667 50.314667zM513.6 64a21.333333 21.333333 0 0 1 21.333333 21.333333v844.746667a21.333333 21.333333 0 1 1-42.666666 0V85.333333a21.333333 21.333333 0 0 1 21.333333-21.333333z" fill="#43AEFC" p-id="9763"></path><path d="M392.469333 176.362667a21.333333 21.333333 0 0 1 30.101334-2.101334l92.010666 80 95.797334-71.84a21.333333 21.333333 0 0 1 25.6 34.133334L526.4 298.752a21.333333 21.333333 0 0 1-26.794667-0.970667l-105.024-91.328a21.333333 21.333333 0 0 1-2.101333-30.090666zM500.448 716.928a21.333333 21.333333 0 0 1 26.069333-0.170667l95.893334 73.066667a21.333333 21.333333 0 0 1-25.856 33.930667l-82.784-63.072-92.053334 72.042666a21.333333 21.333333 0 1 1-26.293333-33.6l105.024-82.197333z" fill="#43AEFC" p-id="9764"></path><path d="M388.16 295.530667a21.333333 21.333333 0 0 1 19.2-1.696l107.274667 42.912 116.181333-34.421334a21.333333 21.333333 0 0 1 27.082667 16.8l17.045333 98.026667 77.034667 72.757333a21.333333 21.333333 0 0 1-0.426667 31.413334l-81.866667 73.258666-30.378666 121.493334a21.333333 21.333333 0 0 1-29.194667 14.4L512.448 688l-106.506667 34.08a21.333333 21.333333 0 0 1-27.776-18.688l-8.309333-107.978667-100.448-62.773333a21.333333 21.333333 0 0 1-1.493333-35.157333l101.866666-76.394667 8.384-109.088a21.333333 21.333333 0 0 1 9.994667-16.48z m30.325333 48.704l-6.912 89.770666a21.333333 21.333333 0 0 1-8.469333 15.424l-84.693333 63.530667 83.2 52a21.333333 21.333333 0 0 1 9.962666 16.448l7.061334 91.818667 88.458666-28.309334a21.333333 21.333333 0 0 1 15.008 0.757334l81.92 35.626666 25.856-103.424a21.333333 21.333333 0 0 1 6.474667-10.730666l69.461333-62.144-65.312-61.696a21.333333 21.333333 0 0 1-6.378666-11.850667l-14.154667-81.418667-100.32 29.717334a21.333333 21.333333 0 0 1-13.973333-0.64l-87.189334-34.88z" fill="#43AEFC" p-id="9765"></path><path d="M513.216 343.306667a16 16 0 0 1 14.517333 8.512l36.085334 68.16 85.248-8.106667a16 16 0 0 1 15.498666 23.690667l-40.928 73.664 40.256 60.373333a16 16 0 0 1-13.312 24.885333h-85.76l-36.768 77.6a16 16 0 0 1-28.938666-0.032l-32.714667-69.525333-73.290667-8.149333a16 16 0 0 1-11.552-24.768l39.744-59.626667-48.874666-73.312a16 16 0 0 1 14.901333-24.8l80.074667 8.010667 31.712-67.392a16 16 0 0 1 14.101333-9.173334z m1.216 51.786666l-22.890667 48.64a16 16 0 0 1-16.074666 9.12l-57.642667-5.76 36.021333 54.016a16 16 0 0 1 0 17.76l-31.072 46.613334 56.053334 6.229333a16 16 0 0 1 12.714666 9.088l22.101334 46.965333 26.581333-56.138666a16 16 0 0 1 14.464-9.141334h65.994667l-29.077334-43.626666a16 16 0 0 1-0.672-16.64l30.890667-55.605334-65.621333 6.24a16 16 0 0 1-15.658667-8.437333l-26.112-49.322667z" fill="#75C4FE" p-id="9766"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/home.svg`:
+
+```````svg
+<svg t="1675566477499" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1093" width="400" height="400"><path d="M512.2 171.2l210.4 171.2 111.1 90.4H724.6v431.4h-80.3V800c0-36.5-29.7-66.1-66.2-66.1H444.3c-36.5 0-66.2 29.7-66.2 66.1v64.3h-79.4V432.8H190.5l111.1-90.4 210.6-171.2m0-73c-7.3 0-14.7 2.4-20.6 7.2L261.4 292.8 75.3 444.2c-22.3 18.1-8.7 52.7 20.6 52.7h138.9v383.6c0 26.4 22.3 47.8 49.8 47.8h107.7c27.5 0 49.8-21.4 49.8-47.9V800c0-1.2 1-2.1 2.2-2.1h133.8c1.2 0 2.2 1 2.2 2.1v83.7c0 24.7 20.8 44.7 46.5 44.7h111.5c27.8 0 50.4-21.7 50.4-48.4V497h139.8c29.3 0 42.9-34.6 20.6-52.7L763 292.8 532.8 105.5c-5.9-4.9-13.3-7.3-20.6-7.3z" p-id="1094"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/copyright.svg`:
+
+```````svg
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1677552825392" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2782" xmlns:xlink="http://www.w3.org/1999/xlink" width="78" height="78"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64z m0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z" p-id="2783"></path><path d="M517.6 351.3c53 0 89 33.8 93 83.4 0.3 4.2 3.8 7.4 8 7.4h56.7c2.6 0 4.7-2.1 4.7-4.7 0-86.7-68.4-147.4-162.7-147.4C407.4 290 344 364.2 344 486.8v52.3C344 660.8 407.4 734 517.3 734c94 0 162.7-58.8 162.7-141.4 0-2.6-2.1-4.7-4.7-4.7h-56.8c-4.2 0-7.6 3.2-8 7.3-4.2 46.1-40.1 77.8-93 77.8-65.3 0-102.1-47.9-102.1-133.6v-52.6c0.1-87 37-135.5 102.2-135.5z" p-id="2784"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/logout.svg`:
+
+```````svg
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1677593736699" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2765" xmlns:xlink="http://www.w3.org/1999/xlink" width="78" height="78"><path d="M868 732h-70.3c-4.8 0-9.3 2.1-12.3 5.8-7 8.5-14.5 16.7-22.4 24.5-32.6 32.5-70.5 58.1-112.7 75.9-43.6 18.4-90 27.8-137.9 27.8-47.9 0-94.3-9.4-137.9-27.8-42.2-17.8-80.1-43.4-112.7-75.9-32.6-32.5-58.1-70.4-76-112.5C167.3 606.2 158 559.9 158 512s9.4-94.2 27.8-137.8c17.8-42.1 43.4-80 76-112.5s70.5-58.1 112.7-75.9c43.6-18.4 90-27.8 137.9-27.8 47.9 0 94.3 9.3 137.9 27.8 42.2 17.8 80.1 43.4 112.7 75.9 7.9 7.9 15.3 16.1 22.4 24.5 3 3.7 7.6 5.8 12.3 5.8H868c6.3 0 10.2-7 6.7-12.3C798 160.5 663.8 81.6 511.3 82 271.7 82.6 79.6 277.1 82 516.4 84.4 751.9 276.2 942 512.4 942c152.1 0 285.7-78.8 362.3-197.7 3.4-5.3-0.4-12.3-6.7-12.3z" p-id="2766"></path><path d="M956.9 505.7L815 393.7c-5.3-4.2-13-0.4-13 6.3v76H488c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h314v76c0 6.7 7.8 10.5 13 6.3l141.9-112c4.1-3.2 4.1-9.4 0-12.6z" p-id="2767"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/lock.svg`:
+
+```````svg
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1677806684596" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6373" xmlns:xlink="http://www.w3.org/1999/xlink" width="78" height="78"><path d="M768 341.333333h-42.666667v-85.333333c0-117.76-95.573333-213.333333-213.333333-213.333333S298.666667 138.24 298.666667 256v85.333333h-42.666667c-47.146667 0-85.333333 38.186667-85.333333 85.333334v426.666666c0 47.146667 38.186667 85.333333 85.333333 85.333334h512c47.146667 0 85.333333-38.186667 85.333333-85.333334V426.666667c0-47.146667-38.186667-85.333333-85.333333-85.333334zM512 725.333333c-47.146667 0-85.333333-38.186667-85.333333-85.333333s38.186667-85.333333 85.333333-85.333333 85.333333 38.186667 85.333333 85.333333-38.186667 85.333333-85.333333 85.333333z m132.266667-384H379.733333v-85.333333c0-72.96 59.306667-132.266667 132.266667-132.266667 72.96 0 132.266667 59.306667 132.266667 132.266667v85.333333z" p-id="6374"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/welcome.svg`:
+
+```````svg
+<svg width="1024" height="626" viewBox="0 0 1024 626" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M863.229 616H241.229H198.729V327.5C198.729 307.066 215.295 290.5 235.729 290.5C256.164 290.5 272.729 273.935 272.729 253.5V222.25C272.729 184.557 303.286 154 340.979 154H649.229C681.814 154 708.229 180.415 708.229 213C708.229 245.585 734.645 272 767.229 272H785.729C828.531 272 863.229 306.698 863.229 349.5V616Z" fill="#F3F6FF"/>
+<path d="M612.117 149.535L611.108 184.712C610.421 208.697 622.613 231.18 643.02 243.562L651.699 243.802C678.003 232.902 695.483 207.446 696.302 178.845L697.075 151.887L692.176 151.752C677.186 151.337 663.322 143.684 654.927 131.191L646.248 130.95C642.675 142.404 631.977 150.085 620.056 149.754L612.117 149.535Z" fill="#FFBD32"/>
+<path d="M603.068 149.522L602.292 176.819C601.488 205.101 617.297 231.214 642.678 243.526C668.978 232.665 686.449 207.289 687.26 178.772L688.025 151.893L683.126 151.757C668.136 151.338 654.27 143.703 645.871 131.244C636.625 143.223 622.237 150.057 607.148 149.635L603.068 149.522Z" fill="#54B7FF"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M611.229 157.979L610.605 179.823C609.955 202.601 622.679 223.625 643.1 233.515C664.261 224.788 678.328 204.353 678.983 181.386L679.598 159.88L675.618 159.77C663.576 159.435 652.435 153.303 645.676 143.29C638.233 152.918 626.671 158.409 614.549 158.071L611.229 157.979Z" stroke="black" stroke-width="2"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M666.567 176.778L639.576 204.99L625.931 190.302L631.854 184.606L639.683 193.034L660.746 171.017L666.567 176.778Z" fill="white"/>
+<path d="M768.729 139C771.49 139 773.729 136.761 773.729 134C773.729 131.239 771.49 129 768.729 129C765.968 129 763.729 131.239 763.729 134C763.729 136.761 765.968 139 768.729 139Z" fill="#54B7FF"/>
+<path d="M799.229 163.5C805.856 163.5 811.229 158.127 811.229 151.5C811.229 144.873 805.856 139.5 799.229 139.5C792.602 139.5 787.229 144.873 787.229 151.5C787.229 158.127 792.602 163.5 799.229 163.5Z" stroke="#54B7FF"/>
+<path d="M302.984 108.343C311.835 110.03 320.379 104.222 322.065 95.37C323.752 86.5183 317.944 77.9752 309.092 76.2884C300.24 74.6017 291.697 80.41 290.011 89.2616C288.324 98.1133 294.132 106.656 302.984 108.343Z" fill="#54B7FF"/>
+<path d="M279.53 139.906C294.75 142.806 309.438 132.819 312.338 117.6C315.238 102.381 305.252 87.6922 290.033 84.7921C274.814 81.8919 260.125 91.8785 257.225 107.098C254.325 122.317 264.311 137.005 279.53 139.906Z" stroke="#7268F5"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M300.086 625.466C298.046 625.466 296.454 623.7 296.666 621.671L321.827 380.432L331.77 381.5L303.502 622.428C303.298 624.16 301.83 625.466 300.086 625.466Z" fill="#627AC1"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M411.954 625.466C413.994 625.466 415.586 623.7 415.374 621.671L390.213 380.432L380.27 381.5L408.538 622.428C408.742 624.16 410.21 625.466 411.954 625.466Z" fill="#627AC1"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M572.086 625.466C570.046 625.466 568.454 623.7 568.666 621.671L593.827 380.432L603.77 381.5L575.502 622.428C575.298 624.16 573.83 625.466 572.086 625.466Z" fill="#627AC1"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M683.954 625.466C685.994 625.466 687.586 623.7 687.374 621.671L662.213 380.432L652.27 381.5L680.538 622.428C680.742 624.16 682.21 625.466 683.954 625.466Z" fill="#627AC1"/>
+<path d="M398.27 370H307.27V385H398.27V370Z" fill="#A3BAFF"/>
+<path d="M680.27 370H398.27V385H680.27V370Z" fill="#CCD9FF"/>
+<path d="M433.241 247.786C433.241 246.127 434.587 244.783 436.247 244.786L451.432 244.815L443.512 352.628H433.241V247.786Z" fill="#706AC7"/>
+<path d="M443.512 249.78C443.512 247.019 445.751 244.78 448.512 244.78H582.31C585.071 244.78 587.31 247.019 587.31 249.78V352.628H443.512V249.78Z" fill="#CFCCFF"/>
+<path d="M575.463 249.916H455.36C452.598 249.916 450.36 252.154 450.36 254.916V342.493C450.36 345.254 452.598 347.493 455.36 347.493H575.463C578.224 347.493 580.463 345.254 580.463 342.493V254.916C580.463 252.154 578.224 249.916 575.463 249.916Z" fill="#282F48"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M565.3 249.916C568.349 260.905 571.067 284.71 559.063 292.713C552.851 296.854 543.301 296.125 533.889 295.407C519.956 294.345 506.327 293.305 504.283 308.119C504.045 309.849 503.823 311.528 503.608 313.156C500.735 334.898 499.071 347.493 475.181 347.493H575.462C578.223 347.493 580.462 345.254 580.462 342.493V254.916C580.462 252.154 578.223 249.916 575.462 249.916H565.3Z" fill="#2F3B67"/>
+<path d="M501.139 268.746H471.478C469.269 268.746 467.478 270.537 467.478 272.746V275.018C467.478 277.227 469.269 279.018 471.478 279.018H501.139C503.348 279.018 505.139 277.227 505.139 275.018V272.746C505.139 270.537 503.348 268.746 501.139 268.746Z" fill="#5FFFD8"/>
+<path d="M562.768 268.746H550.225C548.016 268.746 546.225 270.537 546.225 272.746V275.018C546.225 277.227 548.016 279.018 550.225 279.018H562.768C564.977 279.018 566.768 277.227 566.768 275.018V272.746C566.768 270.537 564.977 268.746 562.768 268.746Z" fill="#5FFFD8"/>
+<path d="M565.055 296.136H469.19C468.244 296.136 467.478 296.903 467.478 297.848C467.478 298.794 468.244 299.56 469.19 299.56H565.055C566 299.56 566.767 298.794 566.767 297.848C566.767 296.903 566 296.136 565.055 296.136Z" fill="#5FFFD8"/>
+<path d="M565.055 308.12H469.19C468.244 308.12 467.478 308.886 467.478 309.831C467.478 310.777 468.244 311.543 469.19 311.543H565.055C566 311.543 566.767 310.777 566.767 309.831C566.767 308.886 566 308.12 565.055 308.12Z" fill="#5FFFD8"/>
+<path d="M525.682 320.103H469.19C468.244 320.103 467.478 320.869 467.478 321.815C467.478 322.76 468.244 323.526 469.19 323.526H525.682C526.627 323.526 527.394 322.76 527.394 321.815C527.394 320.869 526.627 320.103 525.682 320.103Z" fill="#5FFFD8"/>
+<path d="M433.241 352.628H479.461V369.747H438.241C435.479 369.747 433.241 367.508 433.241 364.747V352.628Z" fill="#706AC7"/>
+<path d="M479.461 352.628H628.395V364.747C628.395 367.508 626.156 369.747 623.395 369.747H479.461V352.628Z" fill="#2C2770"/>
+<path d="M457.345 319H382.729L393.113 370H467.729L457.345 319Z" fill="#BE7430"/>
+<path d="M383.08 319H456.729L446.378 370H372.729L383.08 319Z" fill="#FF9330"/>
+<path d="M387.424 326.994C387.67 325.831 388.696 325 389.883 325H446.213C447.813 325 449.006 326.476 448.673 328.042L441.034 364.005C440.787 365.168 439.762 366 438.575 366H382.244C380.645 366 379.452 364.524 379.785 362.957L387.424 326.994Z" fill="#FFB36C"/>
+<path d="M446.729 340L441.269 365.276C441.178 365.698 440.8 366 440.362 366H372.987C372.897 366 372.811 365.988 372.729 365.964V365.928C382.407 366.172 403.619 363.845 409.555 356.61C413.491 351.813 418.204 352.407 422.789 352.53C426.849 352.64 430.518 352.739 432.653 349.392C434.636 346.284 437.147 346.044 439.558 345.813C442.466 345.535 445.226 345.271 446.729 340Z" fill="#F2A864"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M387.254 316.447C387.563 317.044 387.729 317.763 387.729 318.5L386.586 318.5C386.586 317.451 385.979 316.6 385.231 316.6C384.483 316.6 383.876 317.451 383.876 318.5C383.876 319.549 384.483 320.4 385.231 320.4C385.371 320.4 385.505 320.37 385.632 320.315L385.971 321.842C385.469 322.061 384.929 322.052 384.43 321.817C383.931 321.581 383.498 321.131 383.193 320.53C382.887 319.93 382.725 319.21 382.729 318.472C382.733 317.735 382.904 317.019 383.216 316.425C383.528 315.831 383.966 315.391 384.468 315.166C384.969 314.942 385.509 314.945 386.009 315.175C386.509 315.405 386.945 315.85 387.254 316.447Z" fill="#C4C4C4"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M445.253 316.447C445.563 317.044 445.729 317.763 445.729 318.5L444.586 318.5C444.586 317.451 443.979 316.6 443.231 316.6C442.483 316.6 441.876 317.451 441.876 318.5C441.876 319.549 442.483 320.4 443.231 320.4C443.37 320.4 443.505 320.37 443.632 320.315L443.971 321.842C443.469 322.061 442.929 322.052 442.43 321.817C441.931 321.581 441.498 321.131 441.193 320.53C440.888 319.93 440.725 319.21 440.729 318.472C440.734 317.735 440.904 317.019 441.216 316.425C441.528 315.831 441.966 315.391 442.468 315.166C442.969 314.942 443.509 314.945 444.009 315.175C444.509 315.405 444.945 315.85 445.253 316.447Z" fill="#C4C4C4"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M426.254 316.447C426.563 317.044 426.729 317.763 426.729 318.5L425.586 318.5C425.586 317.451 424.979 316.6 424.231 316.6C423.482 316.6 422.876 317.451 422.876 318.5C422.876 319.549 423.482 320.4 424.231 320.4C424.371 320.4 424.505 320.37 424.632 320.315L424.971 321.842C424.469 322.061 423.929 322.052 423.43 321.817C422.931 321.581 422.498 321.131 422.193 320.53C421.887 319.93 421.725 319.21 421.729 318.472C421.733 317.735 421.904 317.019 422.216 316.425C422.528 315.831 422.966 315.391 423.468 315.166C423.969 314.942 424.509 314.945 425.009 315.175C425.509 315.405 425.945 315.85 426.254 316.447Z" fill="#C4C4C4"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M407.254 316.447C407.563 317.044 407.729 317.763 407.729 318.5L406.586 318.5C406.586 317.451 405.98 316.6 405.231 316.6C404.483 316.6 403.876 317.451 403.876 318.5C403.876 319.549 404.483 320.4 405.231 320.4C405.371 320.4 405.505 320.37 405.632 320.315L405.971 321.842C405.469 322.061 404.929 322.052 404.43 321.817C403.931 321.581 403.498 321.131 403.193 320.53C402.887 319.93 402.725 319.21 402.729 318.472C402.733 317.735 402.904 317.019 403.216 316.425C403.528 315.831 403.966 315.391 404.468 315.166C404.969 314.942 405.509 314.945 406.009 315.175C406.509 315.405 406.945 315.85 407.254 316.447Z" fill="#C4C4C4"/>
+<path d="M392.126 332.707C392.329 331.713 393.199 331 394.209 331H397.602C398.948 331 399.955 332.241 399.685 333.565L399.332 335.293C399.129 336.287 398.259 337 397.249 337H393.856C392.51 337 391.503 335.759 391.773 334.435L392.126 332.707Z" fill="#FFDAB8"/>
+<path d="M407.126 332.707C407.329 331.713 408.199 331 409.209 331H412.602C413.948 331 414.955 332.241 414.685 333.565L414.332 335.293C414.129 336.287 413.259 337 412.249 337H408.856C407.51 337 406.503 335.759 406.773 334.435L407.126 332.707Z" fill="#FFDAB8"/>
+<path d="M421.126 332.707C421.329 331.713 422.199 331 423.209 331H426.602C427.948 331 428.955 332.241 428.685 333.565L428.332 335.293C428.129 336.287 427.259 337 426.249 337H422.856C421.51 337 420.503 335.759 420.773 334.435L421.126 332.707Z" fill="#FFDAB8"/>
+<path d="M436.126 332.707C436.329 331.713 437.199 331 438.209 331H441.602C442.948 331 443.955 332.241 443.685 333.565L443.332 335.293C443.129 336.287 442.259 337 441.249 337H437.856C436.51 337 435.503 335.759 435.773 334.435L436.126 332.707Z" fill="#FFDAB8"/>
+<path d="M389.126 343.707C389.329 342.713 390.199 342 391.209 342H394.602C395.948 342 396.955 343.241 396.685 344.565L396.332 346.293C396.129 347.287 395.259 348 394.249 348H390.856C389.51 348 388.503 346.759 388.773 345.435L389.126 343.707Z" fill="#FFDAB8"/>
+<path d="M404.126 343.707C404.329 342.713 405.199 342 406.209 342H409.602C410.948 342 411.955 343.241 411.685 344.565L411.332 346.293C411.129 347.287 410.259 348 409.249 348H405.856C404.51 348 403.503 346.759 403.773 345.435L404.126 343.707Z" fill="#FFDAB8"/>
+<path d="M418.126 343.707C418.329 342.713 419.199 342 420.209 342H423.602C424.948 342 425.955 343.241 425.685 344.565L425.332 346.293C425.129 347.287 424.259 348 423.249 348H419.856C418.51 348 417.503 346.759 417.773 345.435L418.126 343.707Z" fill="#FFDAB8"/>
+<path d="M433.126 343.707C433.329 342.713 434.199 342 435.209 342H438.602C439.948 342 440.955 343.241 440.685 344.565L440.332 346.293C440.129 347.287 439.259 348 438.249 348H434.856C433.51 348 432.503 346.759 432.773 345.435L433.126 343.707Z" fill="#FFDAB8"/>
+<path d="M386.126 354.707C386.329 353.713 387.199 353 388.209 353H391.602C392.948 353 393.955 354.241 393.685 355.565L393.332 357.293C393.129 358.287 392.259 359 391.249 359H387.856C386.51 359 385.503 357.759 385.773 356.435L386.126 354.707Z" fill="#FFDAB8"/>
+<path d="M401.126 354.707C401.329 353.713 402.199 353 403.209 353H406.602C407.948 353 408.955 354.241 408.685 355.565L408.332 357.293C408.129 358.287 407.259 359 406.249 359H402.856C401.51 359 400.503 357.759 400.773 356.435L401.126 354.707Z" fill="#FFDAB8"/>
+<path d="M415.126 354.707C415.329 353.713 416.199 353 417.209 353H420.602C421.948 353 422.955 354.241 422.685 355.565L422.332 357.293C422.129 358.287 421.259 359 420.249 359H416.856C415.51 359 414.503 357.759 414.773 356.435L415.126 354.707Z" fill="#FFDAB8"/>
+<path d="M430.126 354.707C430.329 353.713 431.199 353 432.209 353H435.602C436.948 353 437.955 354.241 437.685 355.565L437.332 357.293C437.129 358.287 436.259 359 435.249 359H431.856C430.51 359 429.503 357.759 429.773 356.435L430.126 354.707Z" fill="#FFDAB8"/>
+<path d="M601.298 18.0682H370.729C362.445 18.0682 355.729 24.784 355.729 33.0682V90.5387C355.729 98.823 362.445 105.539 370.729 105.539H601.298C609.582 105.539 616.298 98.823 616.298 90.5387V33.0682C616.298 24.784 609.582 18.0682 601.298 18.0682Z" fill="#0B86DF"/>
+<path d="M605.729 18.0682H375.16C366.876 18.0682 360.16 24.784 360.16 33.0682V90.5387C360.16 98.823 366.876 105.539 375.16 105.539H605.729C614.013 105.539 620.729 98.823 620.729 90.5387V33.0682C620.729 24.784 614.013 18.0682 605.729 18.0682Z" fill="#54B7FF"/>
+<path d="M469.63 36.9486L473.212 44.2004L481.222 45.3636L475.426 51.008L476.794 58.9788L469.63 55.2157L462.465 58.9788L463.833 51.008L458.038 45.3636L466.048 44.2004L469.63 36.9486Z" fill="#FFE071"/>
+<path d="M499.091 36.9485L502.673 44.2003L510.683 45.3634L504.886 51.0078L506.255 58.9786L499.091 55.2155L491.926 58.9786L493.294 51.0078L487.498 45.3634L495.509 44.2003L499.091 36.9485Z" fill="#FFE071"/>
+<path d="M528.552 36.9485L532.134 44.2003L540.144 45.3634L534.348 51.0078L535.716 58.9786L528.552 55.2155L521.388 58.9786L522.756 51.0078L516.96 45.3634L524.97 44.2003L528.552 36.9485Z" fill="#FFE071"/>
+<path d="M558.013 36.9485L561.595 44.2003L569.605 45.3634L563.809 51.0078L565.177 58.9786L558.013 55.2155L550.849 58.9786L552.217 51.0078L546.421 45.3634L554.431 44.2003L558.013 36.9485Z" fill="#FFE071"/>
+<path d="M587.475 36.9485L591.057 44.2003L599.067 45.3634L593.27 51.0078L594.639 58.9786L587.475 55.2155L580.311 58.9786L581.679 51.0078L575.882 45.3634L583.893 44.2003L587.475 36.9485Z" fill="#FFE071"/>
+<path d="M585.374 70.0244H462.949C461.864 70.0244 460.984 70.9044 460.984 71.99V72.0049C460.984 73.0904 461.864 73.9704 462.949 73.9704H585.374C586.46 73.9704 587.34 73.0904 587.34 72.0049V71.99C587.34 70.9044 586.46 70.0244 585.374 70.0244Z" fill="white"/>
+<path d="M549.366 83.1775H462.949C461.864 83.1775 460.984 84.0575 460.984 85.1431V85.158C460.984 86.2435 461.864 87.1235 462.949 87.1235H549.366C550.451 87.1235 551.331 86.2435 551.331 85.158V85.1431C551.331 84.0575 550.451 83.1775 549.366 83.1775Z" fill="white"/>
+<path d="M406.316 93.0429C422.949 93.0429 436.432 79.4982 436.432 62.79C436.432 46.0818 422.949 32.5371 406.316 32.5371C389.684 32.5371 376.2 46.0818 376.2 62.79C376.2 79.4982 389.684 93.0429 406.316 93.0429Z" fill="#71DCFF"/>
+<mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="376" y="32" width="61" height="62">
+<path d="M406.316 93.0429C422.949 93.0429 436.432 79.4982 436.432 62.79C436.432 46.0818 422.949 32.5371 406.316 32.5371C389.684 32.5371 376.2 46.0818 376.2 62.79C376.2 79.4982 389.684 93.0429 406.316 93.0429Z" fill="white"/>
+</mask>
+<g mask="url(#mask0)">
+<path d="M397.697 59.0227C390.023 58.3 380.51 67.354 376.713 71.9716C376.913 75.4846 377.672 82.9932 379.111 84.9205C380.55 86.8477 395.299 92.75 402.494 95.4602C417.982 93.754 446.441 86.667 436.368 71.9716C423.778 53.6022 407.29 59.9261 397.697 59.0227Z" fill="white"/>
+</g>
+<path d="M422.018 24.8889C421.345 19.4786 416.127 18.6896 413.603 18.9714C412.2 18.126 409.395 14.7445 403.504 15.5899C397.613 16.4352 390.881 19.8167 392.564 27.4249C392.564 27.4249 391.152 42.0753 401.922 42.0753C401.922 45.4716 410.338 62.7201 410.338 52.3978C410.338 42.0753 408.896 49.8507 415.734 42.0753C419.93 40.5697 422.859 31.6518 422.018 24.8889Z" fill="#2C2770"/>
+<path d="M415.134 19.875C420.597 19.875 425.027 15.4258 425.027 9.9375C425.027 4.44917 420.597 0 415.134 0C409.67 0 405.241 4.44917 405.241 9.9375C405.241 15.4258 409.67 19.875 415.134 19.875Z" fill="#2C2770"/>
+<path d="M417.81 30.8064V33.3424C418.932 33.0607 421.176 33.0043 421.176 35.0332C421.176 37.5692 419.493 39.26 417.81 38.4146C417.592 41.0495 416.181 46.2508 411.985 48.4191C412.136 50.4058 412.575 53.2576 413.602 55.3218C414.949 58.027 417.53 59.2668 418.652 59.5486C416.969 61.521 412.256 65.4665 406.87 65.4665C401.484 65.4665 397.333 61.521 395.93 59.5486C396.772 59.2668 398.96 58.1961 400.979 56.1672C402.569 54.5701 402.873 50.7729 402.793 47.9919C399.296 45.6288 398.229 40.8896 397.613 38.4146C396.491 38.6964 394.247 38.5837 394.247 35.8785C394.247 33.1734 396.772 33.0607 397.613 33.3424V30.8064C399.296 31.0882 403.672 30.9754 407.712 28.2703C411.751 25.5651 412.761 24.3253 412.761 24.0435C412.761 25.4524 413.379 28.0463 414.444 29.1156C416.127 30.8064 417.249 30.5246 417.81 30.8064Z" fill="#FFAE64"/>
+<path d="M410.763 42.3788L406.935 44.3019C407.208 44.8514 408.083 45.5657 409.396 45.1261C410.709 44.6865 410.855 43.2946 410.763 42.3788Z" fill="white"/>
+<path d="M402.558 30.8402H399.825C399.371 30.8402 399.004 31.2078 399.004 31.6613V31.6675C399.004 32.121 399.371 32.4886 399.825 32.4886H402.558C403.012 32.4886 403.379 32.121 403.379 31.6675V31.6613C403.379 31.2078 403.012 30.8402 402.558 30.8402Z" fill="#2C2770"/>
+<path d="M413.498 30.8402H410.764C410.31 30.8402 409.943 31.2078 409.943 31.6613V31.6675C409.943 32.121 410.31 32.4886 410.764 32.4886H413.498C413.951 32.4886 414.319 32.121 414.319 31.6675V31.6613C414.319 31.2078 413.951 30.8402 413.498 30.8402Z" fill="#2C2770"/>
+<path d="M411.857 35.4116C412.409 35.4116 412.857 34.9639 412.857 34.4116C412.857 33.8593 412.409 33.4116 411.857 33.4116C411.305 33.4116 410.857 33.8593 410.857 34.4116C410.857 34.9639 411.305 35.4116 411.857 35.4116Z" fill="black"/>
+<path d="M405.567 31.9391V41.8293H408.028" stroke="black" stroke-width="0.6"/>
+<path d="M401.465 35.4116C402.017 35.4116 402.465 34.9639 402.465 34.4116C402.465 33.8593 402.017 33.4116 401.465 33.4116C400.913 33.4116 400.465 33.8593 400.465 34.4116C400.465 34.9639 400.913 35.4116 401.465 35.4116Z" fill="black"/>
+<path d="M419.242 34.9611C419.515 35.6021 419.57 36.9391 417.601 37.1589" stroke="black" stroke-width="0.6"/>
+<path d="M395.86 34.9611C395.587 35.6021 395.532 36.9391 397.501 37.1589" stroke="black" stroke-width="0.6"/>
+<mask id="mask1" mask-type="alpha" maskUnits="userSpaceOnUse" x="394" y="24" width="28" height="42">
+<path d="M417.81 30.8064V33.3424C418.932 33.0607 421.176 33.0043 421.176 35.0332C421.176 37.5692 419.493 39.26 417.81 38.4146C417.592 41.0495 416.181 46.2508 411.985 48.4191C412.136 50.4058 412.575 53.2576 413.602 55.3218C414.949 58.027 417.53 59.2668 418.652 59.5486C416.969 61.521 412.256 65.4664 406.87 65.4664C401.484 65.4664 397.333 61.521 395.93 59.5486C396.772 59.2668 398.96 58.1961 400.979 56.1672C402.569 54.5701 402.873 50.7729 402.793 47.9919C399.296 45.6288 398.229 40.8896 397.613 38.4146C396.491 38.6964 394.247 38.5837 394.247 35.8785C394.247 33.1734 396.772 33.0607 397.613 33.3424V30.8064C399.296 31.0882 403.672 30.9754 407.712 28.2703C411.751 25.5651 412.761 24.3253 412.761 24.0435C412.761 25.4524 413.379 28.0463 414.444 29.1156C416.127 30.8064 417.249 30.5246 417.81 30.8064Z" fill="white"/>
+</mask>
+<g mask="url(#mask1)">
+<path d="M402.012 47.5986C402.741 48.0565 405.075 49.247 407.482 49.247C409.766 49.247 411.903 48.5044 412.582 48.194L412.678 48.1481C412.65 48.162 412.618 48.1774 412.582 48.194L401.739 53.3679L402.012 47.5986Z" fill="#FF8282"/>
+</g>
+<path d="M306.104 614.28L294.303 604.165C288.025 598.784 289.226 582.35 289.226 582.35L272.348 581.437V599.683L269.612 609.263L304.736 616.105L306.104 614.28Z" fill="#FFAE64"/>
+<path d="M300.213 625.228H311.49C312.957 625.228 314.313 624.449 315.053 623.182C316.169 621.268 315.58 618.809 313.736 617.581C311.506 616.097 308.252 613.891 304.28 611.087C296.525 605.613 293.332 601.964 293.332 601.964C293.332 601.964 288.77 604.701 281.928 604.701C275.086 604.701 271.436 599.683 271.436 599.683C268.5 607.023 268.395 615.192 271.141 622.605L271.436 623.403L284.665 624.316L286.946 622.491L292.979 624.215C295.332 624.887 297.766 625.228 300.213 625.228Z" fill="#2C2770"/>
+<path d="M183.854 614.28L195.656 604.165C201.933 598.784 200.732 582.35 200.732 582.35L217.61 581.437V599.683L220.347 609.263L185.223 616.105L183.854 614.28Z" fill="#FFAE64"/>
+<path d="M189.746 625.228H178.469C177.002 625.228 175.646 624.449 174.906 623.182C173.79 621.268 174.379 618.809 176.223 617.581C178.453 616.097 181.707 613.891 185.679 611.087C193.434 605.613 196.627 601.964 196.627 601.964C196.627 601.964 201.189 604.701 208.031 604.701C214.873 604.701 218.522 599.683 218.522 599.683C221.458 607.023 221.564 615.192 218.818 622.605L218.522 623.403L205.294 624.316L203.013 622.491L196.98 624.215C194.627 624.887 192.193 625.228 189.746 625.228Z" fill="#2C2770"/>
+<path d="M222.983 329.045L226.733 310.482L302.911 308.201L307.616 343.962C309.038 354.768 309.497 365.678 308.988 376.565L298.806 594.21H271.892L266.418 376.168L226.733 594.21H197.995L220.347 384.835L220.143 382.656C218.463 364.743 219.42 346.68 222.983 329.045Z" fill="#2C2770"/>
+<mask id="mask2" mask-type="alpha" maskUnits="userSpaceOnUse" x="197" y="308" width="112" height="287">
+<path d="M222.071 329.045L225.821 310.482L301.999 308.201L306.704 343.962C308.126 354.768 308.585 365.678 308.076 376.565L297.894 594.21H270.98L265.506 376.168L225.821 594.21H197.083L219.435 384.835L219.23 382.656C217.551 364.743 218.508 346.68 222.071 329.045Z" fill="white"/>
+</mask>
+<g mask="url(#mask2)">
+<path d="M231.295 308.657C228.862 320.821 223.996 355.732 223.996 398.063C223.996 398.063 208.791 547.074 201.189 595.122" stroke="white"/>
+<path d="M266.875 376.624C269.612 383.466 275.177 406.274 275.542 442.766C275.907 479.259 275.694 558.934 275.542 594.21" stroke="white"/>
+</g>
+<path d="M359.639 189.525L337.576 200.732L340.001 225.045L363.136 214.834C375.708 209.285 384.551 197.672 386.556 184.077L394.479 130.367L400.856 123.104L405.807 116.685C407.503 114.486 408.13 111.646 407.517 108.937C407.073 106.972 405.745 105.323 403.921 104.469L394.712 100.157L400.779 85.5254C401.368 84.1044 400.551 82.4928 399.056 82.1289C397.967 81.8636 396.834 82.354 396.281 83.3298L386.98 99.7583L384.377 99.3237C383.082 99.1074 381.796 99.7591 381.205 100.932L378.186 106.918C377.35 108.577 377.117 110.474 377.526 112.285L379.902 122.787L359.639 189.525Z" fill="#FF9330"/>
+<path d="M401.037 103.181L395.566 113.68C395.023 114.723 393.766 115.166 392.689 114.695C391.666 114.248 391.13 113.113 391.435 112.038L392.342 108.841" stroke="black"/>
+<path d="M406.029 105.634L399.428 115.573C398.806 116.509 397.566 116.803 396.59 116.247C395.598 115.681 395.226 114.435 395.746 113.418L396.008 112.906" stroke="black"/>
+<path d="M406.875 113.25L401.508 120.779C400.828 121.733 399.535 122.018 398.516 121.438C397.532 120.876 397.107 119.678 397.519 118.622L398.512 116.074" stroke="black"/>
+<path d="M388.83 100.567L398.147 104.526C398.932 104.86 399.324 105.745 399.043 106.55C398.436 108.291 396.731 109.402 394.893 109.253L386.371 108.564C388.022 109.631 390.273 115.532 390.503 121.646" stroke="black"/>
+<path d="M225.584 210.606L246.234 205.187H299.679C306.12 205.187 312.53 204.298 318.728 202.545L349.983 193.706L355.457 221.746L309.387 249.691L305.246 266.768L308.87 292.476C310.335 302.864 302.133 312.087 291.645 311.845L229.81 310.419C225.283 310.315 221.745 306.477 222.008 301.957L224.027 267.228L216.729 281.257L190.329 275.565L199.744 236.908C202.873 224.06 212.793 213.962 225.584 210.606Z" fill="#54B7FF"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M246.234 205.187L225.584 210.606C212.793 213.962 202.873 224.06 199.744 236.908L190.329 275.565L216.729 281.257L224.027 267.228L191.249 468.842C190.762 471.834 193.029 474.567 196.059 474.643L220.283 475.247L250.729 362.5V212H277.229L283.229 362.5L300.174 477.238L324.948 477.856C327.996 477.932 330.402 475.286 330.037 472.259L305.246 266.768L309.387 249.691L355.457 221.746L349.983 193.706L318.728 202.545C312.53 204.298 306.12 205.187 299.679 205.187H246.234Z" fill="#FFE071"/>
+<path d="M286.729 164L273.729 162" stroke="black"/>
+<path d="M246.377 200.617C248.255 195.925 247.942 180.674 247.551 173.635C256.162 175.2 273.031 181.026 271.622 191.819C270.213 202.611 274.166 205.31 276.319 205.31C278.667 210.393 280.193 221.147 267.512 223.493C254.831 225.839 244.224 214.694 240.506 208.829C241.68 208.047 244.498 205.31 246.377 200.617Z" fill="#FF9330"/>
+<mask id="mask3" mask-type="alpha" maskUnits="userSpaceOnUse" x="240" y="173" width="39" height="51">
+<path d="M246.691 200.609C248.558 195.975 248.247 180.913 247.858 173.962C256.414 175.506 273.176 181.261 271.776 191.92C270.376 202.579 274.304 205.244 276.443 205.244C278.777 210.264 280.293 220.885 267.693 223.202C255.092 225.519 244.552 214.513 240.858 208.72C242.024 207.947 244.825 205.244 246.691 200.609Z" fill="white"/>
+</mask>
+<g mask="url(#mask3)">
+<path d="M273.379 201.321C254.383 199.256 248.257 183.253 247.568 175.51L273.379 189.964C281.294 194.61 292.376 203.386 273.379 201.321Z" fill="#D76767"/>
+</g>
+<path d="M248.067 175.237C247.685 181.667 255.525 193.357 269.868 192.773C278.241 192.432 280.356 182.859 282.489 172.314C284.01 164.796 286.886 156.785 285.931 151.27L273.31 147.179C275.031 149.517 274.466 149 268.729 149C263.052 149 260.833 145.754 258.729 144C257.582 151.015 248.729 143.671 248.729 147.179C248.729 149.984 250.729 168.357 250.729 170.5C248.729 170.5 249.767 164 248.067 162.961C246.155 161.792 242.331 160.974 242.331 167.053C242.331 173.132 246.155 175.042 248.067 175.237Z" fill="#FF9330"/>
+<path d="M248.729 170.5C248.729 170.5 249.729 162.5 246.729 162.5C240.405 162.5 242.729 170 242.729 170C236.896 159 238.729 138.5 255.729 133.5C281.387 125.954 293.229 149.79 285.729 151C270.229 153.5 258.729 146 256.729 147.5C254.729 149 252.729 163 251.729 168C250.929 172 249.562 171.667 248.729 170.5Z" fill="#2C2770"/>
+<path d="M265.553 178.156L271.939 181.349C271.483 182.261 270.023 183.447 267.834 182.717C265.644 181.987 265.401 179.676 265.553 178.156Z" fill="white"/>
+<path d="M279.238 158.997H283.8C284.555 158.997 285.168 159.61 285.168 160.365C285.168 161.121 284.555 161.734 283.8 161.734H279.238C278.482 161.734 277.869 161.121 277.869 160.365C277.869 159.61 278.482 158.997 279.238 158.997Z" fill="#2C2770"/>
+<path d="M260.992 158.997H265.553C266.309 158.997 266.922 159.61 266.922 160.365C266.922 161.121 266.309 161.734 265.553 161.734H260.992C260.236 161.734 259.623 161.121 259.623 160.365C259.623 159.61 260.236 158.997 260.992 158.997Z" fill="#2C2770"/>
+<path d="M263.728 167.295C262.972 167.295 262.36 166.683 262.36 165.927C262.36 165.171 262.972 164.559 263.728 164.559C264.484 164.559 265.096 165.171 265.096 165.927C265.096 166.683 264.484 167.295 263.728 167.295Z" fill="black"/>
+<path d="M274.22 160.822V177.243H270.115" stroke="black"/>
+<path d="M279.062 167.295C278.306 167.295 277.693 166.683 277.693 165.927C277.693 165.171 278.306 164.559 279.062 164.559C279.818 164.559 280.43 165.171 280.43 165.927C280.43 166.683 279.818 167.295 279.062 167.295Z" fill="black"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M271.729 165.5C271.729 168.814 269.043 171.5 265.729 171.5C262.416 171.5 259.729 168.814 259.729 165.5C259.729 164.67 259.897 164.066 260.168 163.619C260.437 163.175 260.829 162.848 261.345 162.607C262.408 162.109 263.926 162 265.729 162C267.533 162 269.051 162.109 270.113 162.607C270.629 162.848 271.022 163.175 271.291 163.619C271.561 164.066 271.729 164.67 271.729 165.5Z" stroke="black"/>
+<path d="M275.168 163.619C274.048 162.576 272.756 162.576 271.291 163.619" stroke="black"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M286.729 165.5C286.729 168.814 284.043 171.5 280.729 171.5C277.416 171.5 274.729 168.814 274.729 165.5C274.729 164.67 274.897 164.066 275.168 163.619C275.437 163.175 275.829 162.848 276.345 162.607C277.408 162.109 278.926 162 280.729 162C282.533 162 284.051 162.109 285.113 162.607C285.629 162.848 286.022 163.175 286.291 163.619C286.561 164.066 286.729 164.67 286.729 165.5Z" stroke="black"/>
+<path d="M259.729 164L246.729 162" stroke="black"/>
+<path d="M348.958 259.461L297.925 266.595C297.201 266.696 296.59 267.184 296.331 267.868L282.397 304.72C281.861 306.136 283.033 307.611 284.534 307.409L334.988 300.631C335.688 300.537 336.287 300.08 336.563 299.43L352.064 262.881C352.439 261.996 352.132 260.97 351.332 260.436L350.344 259.778C349.936 259.506 349.443 259.393 348.958 259.461Z" fill="#2C2770"/>
+<path d="M350.034 261.58L301.686 268.348C299.876 268.601 298.349 269.822 297.702 271.531L286.175 302.016C284.836 305.557 287.766 309.244 291.518 308.74L335.255 302.864C337.026 302.626 338.536 301.461 339.215 299.808L353.225 265.691C354.105 263.548 352.328 261.259 350.034 261.58Z" fill="#6B8CFF"/>
+<path d="M322.62 289.053C324.826 287.39 325.401 284.434 323.905 282.449C322.409 280.465 319.409 280.203 317.203 281.865C314.998 283.527 314.423 286.484 315.919 288.468C317.415 290.453 320.415 290.715 322.62 289.053Z" fill="#2C2770"/>
+<path d="M269.114 289.448L215.229 281L190.729 275.5L188.187 288.536C186.383 297.781 193.447 306.38 202.866 306.407L265.105 306.585L271.255 310.119C271.437 310.223 271.627 310.313 271.823 310.388L280.239 313.597C280.338 313.634 280.439 313.664 280.541 313.686L294.502 316.661C295.229 316.816 295.978 316.53 296.416 315.93C297.208 314.846 296.644 313.304 295.339 312.988L285.758 310.662H300.655C301.225 310.662 301.749 310.349 302.019 309.848C302.547 308.872 301.908 307.674 300.803 307.567L288.856 306.42L306.475 304.864C307.155 304.804 307.747 304.374 308.014 303.746C308.515 302.569 307.699 301.251 306.422 301.175L290.508 300.23L305.333 297.893C306.345 297.733 307.131 296.923 307.26 295.906C307.431 294.556 306.4 293.352 305.039 293.313L285.758 292.766L287.211 291.855L290.211 283.855L281.195 285.362C280.749 285.437 280.31 285.549 279.883 285.698L269.114 289.448Z" fill="#FF9330"/>
+<path d="M200.372 339.934C207.772 331.187 226.457 334.399 233.231 337.804C215.337 370.366 199.551 347.371 194.068 380.859C191.722 395.192 174.229 381.561 175.574 406.714C176.741 428.538 161.784 430.43 160.039 442.193C158.294 453.955 153.571 463.943 143.407 467.367C128.554 472.369 117.142 454.285 128.359 445.781C139.576 437.278 117.727 424.683 134.925 414.626C152.124 404.569 133.689 381.281 155.358 375.26C177.027 369.238 169.058 356.404 176.06 349.649C183.062 342.895 191.121 350.868 200.372 339.934Z" fill="#6B8CFF"/>
+<path d="M123.198 271.921C126.963 259.499 144.441 260.921 151.941 266.421C141.441 275.921 125.658 275.557 134.89 312.988C138.841 329.008 116.902 322.329 129.489 348.021C140.41 370.314 123.011 378.855 126.441 391.921C129.87 404.988 132.192 417.339 123.198 425.421C110.054 437.232 94.5409 422.28 102.364 408.421C110.187 394.563 84.6977 392.054 98.0187 373.921C111.34 355.788 82.6205 343.318 102.364 327.421C122.108 311.525 101.201 303.584 105.441 293.421C109.68 283.259 118.491 287.449 123.198 271.921Z" fill="#1BE3B3"/>
+<path d="M28.1245 340.767C21.357 333.719 5.59723 337.441 0 340.695C16.9611 367.442 29.2138 347.048 35.6427 375.241C38.3943 387.307 52.5928 374.787 52.7643 396.251C52.9131 414.875 65.7628 415.692 67.8667 425.604C69.9705 435.515 74.5204 443.761 83.3647 446.134C96.2894 449.602 105.07 433.616 95.0618 426.978C85.0536 420.34 103.02 408.47 87.8315 400.827C72.6428 393.184 87.1384 372.401 68.3498 368.428C49.5613 364.454 55.6822 353.116 49.359 347.742C43.0358 342.368 36.5839 349.576 28.1245 340.767Z" fill="#54B7FF"/>
+<path d="M115.24 482.715C113.494 443.322 106.247 334.86 128.441 281.531C130.376 276.881 134.441 266.921 144.941 266.921" stroke="#4F4F4F"/>
+<path d="M94.6762 493.211C93.668 455.576 77.612 373.415 21.4541 345.851" stroke="#4F4F4F"/>
+<path d="M132.612 493.528C136.158 452.682 158.96 364.413 221.801 338.105" stroke="#4F4F4F"/>
+<path d="M82.4409 475.421H142.441L157.912 591.456C160.31 609.441 146.319 625.421 128.175 625.421H96.7064C78.5627 625.421 64.5716 609.441 66.9696 591.456L82.4409 475.421Z" fill="#A3BAFF"/>
+<path d="M150.441 475.421H73.4407V486.421H150.441V475.421Z" fill="#CCD9FF"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M889.401 620.568C891.433 620.568 893.025 618.82 892.836 616.797L876.631 443L866.688 444.068L885.972 617.499C886.166 619.246 887.643 620.568 889.401 620.568Z" fill="#627AC1"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M860.401 620.568C862.433 620.568 864.025 618.82 863.836 616.797L847.631 443L837.688 444.068L856.972 617.499C857.166 619.246 858.643 620.568 860.401 620.568Z" fill="#627AC1"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M773.475 620.568C771.443 620.568 769.851 618.82 770.04 616.797L786.245 443L796.188 444.068L776.904 617.499C776.71 619.246 775.233 620.568 773.475 620.568Z" fill="#627AC1"/>
+<path d="M771.188 431H880.188C884.606 431 888.188 434.582 888.188 439C888.188 443.418 884.606 447 880.188 447H771.188C766.77 447 763.188 443.418 763.188 439C763.188 434.582 766.77 431 771.188 431Z" fill="#A3BAFF"/>
+<path d="M739.499 614.052L751.3 603.937C757.578 598.556 756.377 582.122 756.377 582.122L773.255 581.209V599.455L775.992 609.035L740.868 615.877L739.499 614.052Z" fill="#FFAE64"/>
+<path d="M743.055 614.754L774.167 606.754C776.921 609.232 777.884 613.14 776.597 616.614L774.167 623.175L760.939 624.088L760.026 620.895L753.286 623.422C750.504 624.466 747.557 625 744.585 625H734.069C732.63 625 731.299 624.236 730.574 622.992C729.454 621.073 730.091 618.611 732.001 617.475L745.429 609.491L741.814 612.12C741.078 612.656 740.994 613.723 741.638 614.367C742.009 614.737 742.548 614.885 743.055 614.754Z" fill="#2C2770"/>
+<path d="M792.499 614.435L804.3 604.32C810.578 598.939 809.377 582.505 809.377 582.505L826.254 581.592V599.838L828.991 609.418L793.867 616.26L792.499 614.435Z" fill="#FFAE64"/>
+<path d="M796.055 615.137L827.166 607.137C829.92 609.615 830.883 613.523 829.596 616.997L827.166 623.559L813.938 624.471L813.026 621.278L806.285 623.805C803.503 624.849 800.556 625.383 797.585 625.383H787.068C785.629 625.383 784.298 624.619 783.573 623.376C782.453 621.456 783.09 618.994 785 617.858L798.429 609.874L794.814 612.503C794.077 613.039 793.993 614.106 794.638 614.75C795.008 615.12 795.547 615.268 796.055 615.137Z" fill="#2C2770"/>
+<path d="M804.246 594.911H829.228V461L861.484 444.328C879.808 434.857 888.59 413.519 882.242 393.893L807.228 392.5L744.855 432.304C736.562 437.596 732.144 447.26 733.567 456.995L753.729 594.911H776.229L777.729 463L785.232 459.07C785.176 460.305 785.234 461.556 785.412 462.807L804.246 594.911Z" fill="#2C2770"/>
+<path d="M882.728 394C879.728 420.5 869.728 436 820.228 454.5L825.728 595.5" stroke="white"/>
+<path d="M786.229 447L768.229 458L771.729 594.5" stroke="white"/>
+<path d="M921.697 337.592L900.876 327.694L884.322 343.317L903.692 353.851C915.764 360.416 930.36 360.325 942.349 353.609L985.159 329.63L994.145 330.201H1001.7C1004.28 330.201 1006.74 329.047 1008.39 327.054C1009.58 325.608 1010.04 323.69 1009.64 321.858L1007.58 312.612L1021.82 308.762C1023.2 308.388 1023.93 306.868 1023.35 305.558C1022.92 304.604 1021.92 304.047 1020.88 304.195L1003.47 306.682L1002.38 304.647C1001.76 303.489 1000.46 302.87 999.17 303.118L993.378 304.232C991.554 304.582 989.909 305.557 988.725 306.988L982.456 314.564L921.697 337.592Z" fill="#FFAE64"/>
+<path d="M1008.94 318.998L998.087 320.937C997.009 321.129 995.966 320.454 995.701 319.392C995.448 318.382 995.981 317.341 996.947 316.955L999.822 315.805" stroke="black"/>
+<path d="M1009.98 324.076L998.888 324.862C997.844 324.936 996.921 324.189 996.776 323.153C996.629 322.099 997.337 321.115 998.383 320.921L998.909 320.823" stroke="black"/>
+<path d="M1004.84 329.033L996.232 329.359C995.14 329.4 994.194 328.609 994.043 327.527C993.897 326.481 994.539 325.486 995.552 325.189L997.997 324.472" stroke="black"/>
+<path d="M1003.93 308.506L1006.31 317.632C1006.51 318.401 1006.08 319.193 1005.32 319.444C1003.7 319.987 1001.91 319.361 1000.97 317.922L996.629 311.243C996.781 313.068 993.709 318.086 989.33 321.735" stroke="black"/>
+<path d="M758.534 291.248L780.617 297.869L782.419 320.561L760.986 315.384C747.629 312.158 736.863 302.3 732.473 289.279L716.8 242.78L709.752 237.178L704.15 232.113C702.231 230.378 701.186 227.877 701.299 225.293C701.381 223.418 702.325 221.686 703.856 220.601L711.585 215.123L703.6 202.714C702.825 201.509 703.307 199.896 704.617 199.315C705.572 198.891 706.692 199.153 707.36 199.956L718.607 213.478L720.779 212.699C722.016 212.256 723.397 212.669 724.187 213.718L727.737 218.429C728.854 219.912 729.421 221.738 729.34 223.594L728.909 233.419L758.534 291.248Z" fill="#FFAE64"/>
+<path d="M706.287 218.943L713.041 227.663C713.711 228.528 714.937 228.727 715.846 228.117C716.711 227.537 717.014 226.408 716.556 225.473L715.195 222.692" stroke="black"/>
+<path d="M702.116 222.018L709.814 230.037C710.538 230.792 711.724 230.857 712.527 230.186C713.343 229.503 713.477 228.298 712.832 227.452L712.507 227.026" stroke="black"/>
+<path d="M702.602 229.14L708.768 235.154C709.55 235.917 710.783 235.964 711.62 235.263C712.43 234.585 712.621 233.417 712.069 232.517L710.736 230.345" stroke="black"/>
+<path d="M717.045 214.525L709.159 219.698C708.495 220.134 708.282 221.01 708.673 221.701C709.517 223.197 711.265 223.933 712.925 223.493L720.623 221.45C719.287 222.702 718.2 228.483 719.001 234.127" stroke="black"/>
+<path d="M879.39 303.911L860.626 297.222C855.049 297.222 840.548 296.94 827.163 295.814C813.778 294.687 789.518 295.814 769.998 292.997L765.815 318.347C774.18 322.572 786.729 326.797 803.46 329.614C797.883 346.514 801.601 349.33 806.249 354.963L810.432 373.272L800.296 397H882.934L874.379 371L879.397 342.262L896.877 353.555L913.609 332.43L888.199 309.209C885.645 306.875 882.65 305.074 879.39 303.911Z" fill="#6B8CFF"/>
+<mask id="mask4" mask-type="alpha" maskUnits="userSpaceOnUse" x="765" y="292" width="149" height="105">
+<path d="M879.39 303.911L860.626 297.222C855.049 297.222 840.548 296.94 827.163 295.814C813.778 294.687 789.518 295.814 769.998 292.997L765.815 318.347C774.18 322.572 786.729 326.797 803.46 329.614C797.883 346.514 801.601 349.33 806.249 354.963L810.432 373.272L800.296 397H882.934L874.379 371L879.397 342.262L896.877 353.555L913.609 332.43L888.199 309.209C885.645 306.875 882.65 305.074 879.39 303.911Z" fill="white"/>
+</mask>
+<g mask="url(#mask4)">
+<path d="M795.008 280.225C801.851 307.594 727.498 324.928 732.515 357.771C737.533 390.614 864.344 468.16 909.503 444.44C954.662 420.72 952.837 379.21 867.081 381.035C781.324 382.86 761.253 344.999 781.78 324.928C802.307 304.857 862.519 366.438 864.344 340.893C866.168 315.349 789.078 307.594 820.097 288.892C845.516 273.566 855.677 321.279 883.502 327.209C905.763 331.953 918.018 323.712 921.363 318.998C942.498 329.185 974.642 352.388 934.135 363.701C893.629 375.014 824.506 360.508 795.008 351.841" stroke="#A3B7FF" stroke-width="7"/>
+</g>
+<path d="M817.747 239.325C818.87 230.342 827.572 229.032 831.783 229.5C834.122 228.096 838.801 222.482 848.626 223.885C858.452 225.289 869.681 230.903 866.874 243.536C866.874 243.536 873.424 259.444 875.295 265.994C880.91 280.03 872.786 290.211 861.259 291.259C845.819 292.662 852.837 291.259 828.976 294.066C805.114 296.873 803.711 277.223 809.325 264.59C814.94 251.958 816.343 250.554 817.747 239.325Z" fill="#2C2770"/>
+<path d="M824.765 249.15V253.361C822.893 252.893 819.15 252.8 819.15 256.168C819.15 260.379 821.958 263.187 824.765 261.783C825.129 266.158 827.483 274.794 834.481 278.394C834.23 281.693 833.497 286.428 831.783 289.855C829.537 294.347 825.233 296.405 823.361 296.873C826.168 300.148 834.029 306.699 843.012 306.699C851.995 306.699 858.92 300.148 861.259 296.873C859.855 296.405 856.206 294.628 852.837 291.259C850.185 288.607 849.679 282.302 849.812 277.685C855.645 273.761 857.424 265.892 858.452 261.783C860.323 262.251 864.066 262.064 864.066 257.572C864.066 253.08 859.855 252.893 858.452 253.361V249.15C855.644 249.618 848.346 249.431 841.608 244.939C834.871 240.448 833.187 238.389 833.187 237.921C833.187 240.261 832.155 244.568 830.379 246.343C827.572 249.15 825.701 248.682 824.765 249.15Z" fill="#FFAE64"/>
+<path d="M836.518 268.365L842.905 271.558C842.448 272.47 840.989 273.656 838.799 272.926C836.61 272.197 836.366 269.885 836.518 268.365Z" fill="white"/>
+<path d="M850.203 249.206H854.764C855.52 249.206 856.133 249.819 856.133 250.575C856.133 251.331 855.52 251.943 854.764 251.943H850.203C849.447 251.943 848.834 251.331 848.834 250.575C848.834 249.819 849.447 249.206 850.203 249.206Z" fill="#2C2770"/>
+<path d="M831.957 249.206H836.518C837.274 249.206 837.887 249.819 837.887 250.575C837.887 251.331 837.274 251.943 836.518 251.943H831.957C831.201 251.943 830.588 251.331 830.588 250.575C830.588 249.819 831.201 249.206 831.957 249.206Z" fill="#2C2770"/>
+<path d="M834.694 256.505C833.938 256.505 833.326 255.892 833.326 255.136C833.326 254.381 833.938 253.768 834.694 253.768C835.45 253.768 836.062 254.381 836.062 255.136C836.062 255.892 835.45 256.505 834.694 256.505Z" fill="black"/>
+<path d="M845.185 251.031V267.453H841.08" stroke="black"/>
+<path d="M852.028 256.505C851.272 256.505 850.66 255.892 850.66 255.136C850.66 254.381 851.272 253.768 852.028 253.768C852.784 253.768 853.396 254.381 853.396 255.136C853.396 255.892 852.784 256.505 852.028 256.505Z" fill="black"/>
+<path d="M822.378 256.049C821.922 257.113 821.83 259.333 825.115 259.698" stroke="black"/>
+<path d="M861.376 256.049C861.832 257.113 861.923 259.333 858.639 259.698" stroke="black"/>
+<mask id="mask5" mask-type="alpha" maskUnits="userSpaceOnUse" x="819" y="237" width="46" height="70">
+<path d="M824.765 249.15V253.361C822.893 252.893 819.15 252.8 819.15 256.168C819.15 260.379 821.958 263.187 824.765 261.783C825.129 266.158 827.483 274.794 834.481 278.394C834.23 281.693 833.497 286.428 831.783 289.855C829.537 294.347 825.233 296.405 823.361 296.873C826.168 300.148 834.029 306.699 843.012 306.699C851.995 306.699 858.92 300.148 861.259 296.873C859.855 296.405 856.206 294.628 852.837 291.259C850.185 288.607 849.679 282.302 849.812 277.685C855.645 273.761 857.424 265.892 858.452 261.783C860.323 262.251 864.066 262.064 864.066 257.572C864.066 253.08 859.855 252.893 858.452 253.361V249.15C855.644 249.618 848.346 249.431 841.608 244.939C834.871 240.448 833.187 238.389 833.187 237.921C833.187 240.261 832.155 244.568 830.379 246.343C827.572 249.15 825.701 248.682 824.765 249.15Z" fill="white"/>
+</mask>
+<g mask="url(#mask5)">
+<path d="M851.115 277.032C849.899 277.792 846.006 279.769 841.992 279.769C838.182 279.769 834.618 278.536 833.486 278.02L833.325 277.944C833.372 277.967 833.425 277.993 833.486 278.02L851.572 286.611L851.115 277.032Z" fill="#FF8282"/>
+</g>
+</svg>
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/refresh.svg`:
+
+```````svg
+<svg t="1675579852089" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1242" width="400" height="400"><path d="M850.8 576c-14.3 0-26.9 9.5-30.8 23.2-3.6 12.7-8 25.1-13.1 37.3-16.1 38.1-39.2 72.3-68.6 101.7-29.4 29.4-63.6 52.5-101.7 68.6C597.1 823.6 555.2 832 512 832s-85.1-8.5-124.5-25.1c-38.1-16.1-72.3-39.2-101.7-68.6-29.4-29.4-52.5-63.6-68.6-101.7-4.1-9.7-7.7-19.6-10.8-29.5h55.1l-93.3-125.8L74.9 607h64.9C182.2 773.1 332.7 896 512 896c175.8 0 324-118.1 369.5-279.3 5.8-20.4-9.5-40.7-30.7-40.7zM173.2 448.7c14.3 0 26.9-9.5 30.8-23.2 3.6-12.7 8-25.3 13.2-37.5 16.1-38.1 39.2-72.3 68.6-101.7 29.4-29.4 63.6-52.5 101.7-68.6 39.4-16.7 81.3-25.1 124.5-25.1s85.1 8.5 124.5 25.1c38.1 16.1 72.3 39.2 101.7 68.6 29.4 29.4 52.5 63.6 68.6 101.7 4.7 11.2 8.8 22.6 12.2 34.2h-58L854.3 548l93.3-125.8h-62.3C844.7 253.6 693 128.4 512 128.4c-175.9 0-324.1 118.2-369.6 279.5-5.8 20.5 9.6 40.8 30.8 40.8z" p-id="1243" fill="#bfbfbf"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/loading.svg`:
+
+```````svg
+<svg t="1675579061907" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2751" width="400" height="400"><path d="M876.864 782.592c3.264 0 6.272-3.2 6.272-6.656 0-3.456-3.008-6.592-6.272-6.592-3.264 0-6.272 3.2-6.272 6.592 0 3.456 3.008 6.656 6.272 6.656z m-140.544 153.344c2.304 2.432 5.568 3.84 8.768 3.84a12.16 12.16 0 0 0 8.832-3.84 13.76 13.76 0 0 0 0-18.56 12.224 12.224 0 0 0-8.832-3.84 12.16 12.16 0 0 0-8.768 3.84 13.696 13.696 0 0 0 0 18.56zM552.32 1018.24c3.456 3.648 8.32 5.76 13.184 5.76a18.368 18.368 0 0 0 13.184-5.76 20.608 20.608 0 0 0 0-27.968 18.368 18.368 0 0 0-13.184-5.824 18.368 18.368 0 0 0-13.184 5.76 20.608 20.608 0 0 0 0 28.032z m-198.336-5.76c4.608 4.8 11.072 7.68 17.6 7.68a24.448 24.448 0 0 0 17.536-7.68 27.456 27.456 0 0 0 0-37.248 24.448 24.448 0 0 0-17.536-7.68 24.448 24.448 0 0 0-17.6 7.68 27.52 27.52 0 0 0 0 37.184z m-175.68-91.84c5.76 6.08 13.824 9.6 21.952 9.6a30.592 30.592 0 0 0 22.016-9.6 34.368 34.368 0 0 0 0-46.592 30.592 30.592 0 0 0-22.016-9.6 30.592 30.592 0 0 0-21.952 9.6 34.368 34.368 0 0 0 0 46.592z m-121.152-159.36c6.912 7.36 16.64 11.648 26.368 11.648a36.736 36.736 0 0 0 26.432-11.584 41.28 41.28 0 0 0 0-55.936 36.736 36.736 0 0 0-26.432-11.584 36.8 36.8 0 0 0-26.368 11.52 41.28 41.28 0 0 0 0 56zM12.736 564.672a42.88 42.88 0 0 0 30.784 13.44 42.88 42.88 0 0 0 30.784-13.44 48.128 48.128 0 0 0 0-65.216 42.88 42.88 0 0 0-30.72-13.44 42.88 42.88 0 0 0-30.848 13.44 48.128 48.128 0 0 0 0 65.216z m39.808-195.392a48.96 48.96 0 0 0 35.2 15.36 48.96 48.96 0 0 0 35.2-15.36 54.976 54.976 0 0 0 0-74.56 48.96 48.96 0 0 0-35.2-15.424 48.96 48.96 0 0 0-35.2 15.424 54.976 54.976 0 0 0 0 74.56zM168.32 212.48c10.368 11.008 24.96 17.408 39.68 17.408 14.592 0 29.184-6.4 39.552-17.408a61.888 61.888 0 0 0 0-83.84 55.104 55.104 0 0 0-39.616-17.408c-14.656 0-29.248 6.4-39.616 17.408a61.888 61.888 0 0 0 0 83.84zM337.344 124.8c11.52 12.16 27.712 19.264 43.968 19.264 16.256 0 32.448-7.04 43.968-19.264a68.672 68.672 0 0 0 0-93.184 61.248 61.248 0 0 0-43.968-19.264 61.248 61.248 0 0 0-43.968 19.264 68.736 68.736 0 0 0 0 93.184z m189.632-1.088c12.672 13.44 30.528 21.248 48.448 21.248s35.712-7.808 48.384-21.248a75.584 75.584 0 0 0 0-102.464A67.392 67.392 0 0 0 575.36 0c-17.92 0-35.776 7.808-48.448 21.248a75.584 75.584 0 0 0 0 102.464z m173.824 86.592c13.824 14.592 33.28 23.104 52.736 23.104 19.584 0 39.04-8.512 52.8-23.104a82.432 82.432 0 0 0 0-111.744 73.472 73.472 0 0 0-52.8-23.168c-19.52 0-38.912 8.512-52.736 23.168a82.432 82.432 0 0 0 0 111.744z m124.032 158.528c14.976 15.872 36.032 25.088 57.216 25.088 21.12 0 42.24-9.216 57.152-25.088a89.344 89.344 0 0 0 0-121.088 79.616 79.616 0 0 0-57.152-25.088c-21.184 0-42.24 9.216-57.216 25.088a89.344 89.344 0 0 0 0 121.088z m50.432 204.032c16.128 17.088 38.784 27.008 61.632 27.008 22.784 0 45.44-9.92 61.568-27.008a96.256 96.256 0 0 0 0-130.432 85.76 85.76 0 0 0-61.568-27.072c-22.848 0-45.44 9.984-61.632 27.072a96.192 96.192 0 0 0 0 130.432z" fill="#262626" p-id="2752"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/full-screen.svg`:
+
+```````svg
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1678348709283" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9406" width="32" height="32" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M853.333333 640a42.666667 42.666667 0 1 1 0 85.333333h-128v128a42.666667 42.666667 0 1 1-85.333333 0v-170.666666a42.666667 42.666667 0 0 1 42.666667-42.666667h170.666666zM170.666667 640h170.666666a42.666667 42.666667 0 0 1 42.368 37.674667L384 682.666667v170.666666a42.666667 42.666667 0 0 1-85.034667 4.992L298.666667 853.333333v-128H170.666667a42.666667 42.666667 0 0 1-4.992-85.034666L170.666667 640h170.666666-170.666666zM682.666667 128a42.666667 42.666667 0 0 1 42.368 37.674667L725.333333 170.666667v128h128a42.666667 42.666667 0 0 1 4.992 85.034666L853.333333 384h-170.666666a42.666667 42.666667 0 0 1-42.368-37.674667L640 341.333333V170.666667a42.666667 42.666667 0 0 1 42.666667-42.666667zM341.333333 128a42.666667 42.666667 0 0 1 42.666667 42.666667v170.666666a42.666667 42.666667 0 0 1-42.666667 42.666667H170.666667a42.666667 42.666667 0 0 1 0-85.333333h128V170.666667a42.666667 42.666667 0 0 1 42.666666-42.666667z" fill="#212121" p-id="9407"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/assets/icons/phone.svg`:
+
+```````svg
+<svg t="1681103142996" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1227" width="16" height="16"><path d="M764.197547 1013.987556h-13.084445a529.180444 529.180444 0 0 1-255.829333-88.234667A1139.939556 1139.939556 0 0 1 40.855324 424.106667 448.682667 448.682667 0 0 1 1.715769 275.911111a171.804444 171.804444 0 0 1 53.646222-150.528l16.099556-15.758222a311.751111 311.751111 0 0 1 52.906666-44.373333 135.68 135.68 0 0 1 168.049778 6.997333A351.118222 351.118222 0 0 1 398.231324 212.195556a141.937778 141.937778 0 0 1-34.872888 164.010666c-9.045333 8.988444-17.408 18.602667-25.031112 28.842667 5.859556 10.865778 12.572444 21.276444 20.024889 31.118222a909.937778 909.937778 0 0 0 229.489778 225.735111c7.566222 5.290667 15.416889 10.126222 23.608889 14.506667 5.518222-4.266667 15.303111-13.767111 21.048889-19.342222 62.179556-60.871111 121.173333-69.176889 197.404444-27.306667 41.528889 22.016 78.506667 51.825778 108.828445 87.779556 44.657778 48.981333 47.900444 122.88 7.793778 175.559111a405.048889 405.048889 0 0 1-90.282667 94.094222 144.497778 144.497778 0 0 1-92.046222 26.794667z m-10.069334-75.207112a88.746667 88.746667 0 0 0 56.945778-10.808888 326.030222 326.030222 0 0 0 73.216-75.207112 63.431111 63.431111 0 0 0-3.015111-87.324444 285.184 285.184 0 0 0-86.755556-69.176889c-46.876444-25.088-70.200889-22.584889-108.600888 15.018667-50.176 50.176-75.264 56.718222-138.922667 13.824a984.405333 984.405333 0 0 1-248.604445-244.280889c-48.924444-67.697778-46.648889-95.573333 12.060445-156.273778a67.697778 67.697778 0 0 0 19.057778-82.261333 272.611556 272.611556 0 0 0-83.057778-110.136889 61.952 61.952 0 0 0-81.180445-2.730667c-14.620444 10.012444-28.103111 21.617778-40.163555 34.588445l-18.033778 17.351111c-24.007111 22.926222-35.100444 56.263111-29.582222 89.031111 3.811556 42.382222 14.848 83.854222 32.597333 122.595555 87.779556 193.137778 225.678222 346.168889 426.325334 468.536889a456.476444 456.476444 0 0 0 217.713777 76.970667v0.284444z" p-id="1228"></path></svg>
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/store/index.ts`:
+
+```````ts
+import { createPinia } from 'pinia'
+
+const pinia = createPinia()
+
+export default pinia
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/store/modules/category.ts`:
+
+```````ts
+// 商品分类全局组件的仓库
+import { reqC1, reqC2, reqC3 } from '@/api/product/attr'
+import { CategoryResponseData } from '@/api/product/attr/type'
+import { defineStore } from 'pinia'
+import { CategoryState } from './types/type'
+
+const useCategory = defineStore('Category', {
+  state: (): CategoryState => {
+    return {
+      // 存储一级分类
+      c1Arr: [],
+      // 存储二级分类
+      c2Arr: [],
+      // 存储二级分类
+      c3Arr: [],
+      // 存储一级分类的ID
+      c1Id: '',
+      // 存储二级分类的ID
+      c2Id: '',
+      // 存储三级分类的ID
+      c3Id: '',
+    }
+  },
+  actions: {
+    async getC1() {
+      const result: CategoryResponseData = await reqC1()
+      if (result.code == 200) {
+        this.c1Arr = result.data
+      }
+    },
+    async getC2() {
+      const result: CategoryResponseData = await reqC2(this.c1Id as number)
+      if (result.code == 200) {
+        this.c2Arr = result.data
+      }
+    },
+    async getC3() {
+      const result: CategoryResponseData = await reqC3(this.c2Id as number)
+      if (result.code == 200) {
+        this.c3Arr = result.data
+      }
+    },
+  },
+  getters: {},
+})
+
+export default useCategory
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/store/modules/types/type.ts`:
+
+```````ts
+// 定义小仓库数据state的类型
+import { CategoryObj } from '@/api/product/attr/type'
+import type { RouteRecordRaw } from 'vue-router'
+
+export interface UserState {
+  token: string | null
+  menuRoutes: RouteRecordRaw[]
+  username: string
+  avatar: string
+}
+
+// 定义分类仓库state对象的ts类型
+export interface CategoryState {
+  c1Id: string | number
+  c2Id: string | number
+  c3Id: string | number
+  c1Arr: CategoryObj[]
+  c2Arr: CategoryObj[]
+  c3Arr: CategoryObj[]
+}
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/store/modules/setting.ts`:
+
+```````ts
+// 关于layout组件相关的仓库
+
+import { defineStore } from 'pinia'
+
+let useLayoutSettingStore = defineStore('SettingStore', {
+  state: () => {
+    return {
+      fold: false, // 控制折叠效果
+      refresh: false, // 控制刷新效果
+    }
+  },
+})
+
+export default useLayoutSettingStore
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/store/modules/user.ts`:
+
+```````ts
+// 创建用户相关小仓库
+import { defineStore } from 'pinia'
+// 引入登录接口
+import { reqLogin, reqUserInfo, reqLogout } from '@/api/user'
+import { UserState } from './types/type'
+import { GET_TOKEN, REMOVE_TOKEN, SET_TOKEN } from '@/utils/token'
+// 引入路由
+import { constantRoute } from '@/router/routes'
+import {
+  loginFormData,
+  loginResponseData,
+  userInfoResponseData,
+} from '@/api/user/type'
+// 创建用户小仓库
+const useUserStore = defineStore('User', {
+  // 小仓库存储数据的地方
+  state: (): UserState => {
+    return {
+      token: GET_TOKEN(),
+      menuRoutes: constantRoute,
+      username: '',
+      avatar: '',
+    }
+  },
+  // 异步 逻辑的地方
+  actions: {
+    async userLogin(data: loginFormData) {
+      // 登录请求
+      const result: loginResponseData = await reqLogin(data)
+      console.log(result)
+      // 登录请求：成功 200->token
+      if (result.code == 200) {
+        // 由于pinia存储数据用的是js对象
+        this.token = result.data as string
+        // 本地持久化存储一份
+        SET_TOKEN(result.data as string)
+        return 'ok'
+      } else {
+        return Promise.reject(new Error(result.data))
+      }
+    },
+    // 获取用户信息的方法
+    async userInfo() {
+      const result: userInfoResponseData = await reqUserInfo()
+      if (result.code == 200) {
+        this.username = result.data.name
+        this.avatar = result.data.avatar
+        return 'ok'
+      } else return Promise.reject(new Error(result.message))
+    },
+    // 退出登录
+    async userLogout() {
+      const result: any = await reqLogout()
+      console.log(result)
+      if (result.code == 200) {
+        this.token = ''
+        this.username = ''
+        this.avatar = ''
+        REMOVE_TOKEN()
+        return 'ok'
+      } else {
+        return Promise.reject(new Error(result.message))
+      }
+    },
+  },
+  getters: {},
+})
+
+// 对外暴露获取小仓库的方法
+export default useUserStore
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/router/routes.ts`:
+
+```````ts
+// 对外暴露配置路由
+export const constantRoute = [
+  {
+    path: '/login',
+    component: () => import('@/views/login/index.vue'),
+    name: 'login', // 命名路由
+    meta: {
+      title: '登录', // 菜单标题
+      hidden: true, // 路由的标题在菜单中是否隐藏
+      icon: 'Promotion',
+    },
+  },
+  {
+    // 登录成功后展示数据的路由
+    path: '/',
+    component: () => import('@/layout/index.vue'),
+    name: 'layout',
+    redirect: '/home',
+    meta: {
+      title: '',
+      hidden: false,
+      icon: '',
+    },
+    children: [
+      {
+        path: '/home',
+        component: () => import('@/views/home/index.vue'),
+        meta: {
+          title: '首页',
+          hidden: false,
+          icon: 'HomeFilled',
+        },
+      },
+    ],
+  },
+  {
+    path: '/screen',
+    component: () => import('@/views/screen/index.vue'),
+    name: 'Screen',
+    meta: {
+      hidden: false,
+      title: '数据大屏',
+      icon: 'Platform',
+    },
+  },
+  {
+    path: '/acl',
+    component: () => import('@/layout/index.vue'),
+    name: 'Acl',
+    meta: {
+      title: '权限管理',
+      hidden: false,
+      icon: 'Lock',
+    },
+    redirect: '/acl/user',
+    children: [
+      {
+        path: '/acl/user',
+        component: () => import('@/views/acl/user/index.vue'),
+        name: 'Acl',
+        meta: {
+          title: '用户管理',
+          hidden: false,
+          icon: 'User',
+        },
+      },
+      {
+        path: '/acl/role',
+        component: () => import('@/views/acl/role/index.vue'),
+        name: 'Role',
+        meta: {
+          title: '角色管理',
+          hidden: false,
+          icon: 'UserFilled',
+        },
+      },
+      {
+        path: '/acl/permission',
+        component: () => import('@/views/acl/permission/index.vue'),
+        name: 'Permission',
+        meta: {
+          title: '菜单管理',
+          hidden: false,
+          icon: 'Monitor',
+        },
+      },
+    ],
+  },
+  {
+    path: '/product',
+    component: () => import('@/layout/index.vue'),
+    name: 'Product',
+    meta: {
+      title: '商品管理',
+      hidden: false,
+      icon: 'Goods',
+    },
+    redirect: '/product/trademark',
+    children: [
+      {
+        path: '/product/trademark',
+        component: () => import('@/views/product/trademark/index.vue'),
+        name: 'Trademark',
+        meta: {
+          title: '品牌管理',
+          icon: 'ShoppingCartFull',
+        },
+      },
+      {
+        path: '/product/attr',
+        component: () => import('@/views/product/attr/index.vue'),
+        name: 'Attr',
+        meta: {
+          title: '属性管理',
+          icon: 'ChromeFilled',
+        },
+      },
+      {
+        path: '/product/spu',
+        component: () => import('@/views/product/spu/index.vue'),
+        name: 'Spu',
+        meta: {
+          title: 'SPU管理',
+          icon: 'Calendar',
+        },
+      },
+      {
+        path: '/product/sku',
+        component: () => import('@/views/product/sku/index.vue'),
+        name: 'Sku',
+        meta: {
+          title: 'SKU管理',
+          icon: 'Orange',
+        },
+      },
+    ],
+  },
+  {
+    // 404
+    path: '/404',
+    component: () => import('@/views/404/index.vue'),
+    meta: {
+      title: '404',
+      hidden: true,
+      icon: 'DocumentDelete',
+    },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/404',
+    name: 'Any',
+    meta: {
+      title: '任意',
+      hidden: true,
+      icon: 'DataLine',
+    },
+  },
+]
+
+```````
+
+`/Users/lixinyang/project/GuiguMall/src/router/index.ts`:
+
+```````ts
+// 通过 vue-router 实现模板路由配置
+import { createRouter, createWebHashHistory } from 'vue-router'
+import { constantRoute } from './routes'
+// 创建路由
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: constantRoute,
+  // 滚动行为
+  scrollBehavior() {
+    return {
+      left: 0,
+      top: 0,
+    }
+  },
+})
+
+export default router
+
+```````
